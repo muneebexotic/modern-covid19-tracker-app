@@ -51,9 +51,9 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
   }
 
   final colorList = const <Color>[
-    Color(0xff4285F4),
-    Color(0xff1aa260),
-    Color(0xffde5246),
+    Color(0xff6366f1),
+    Color(0xff10b981),
+    Color(0xffef4444),
   ];
 
   @override
@@ -62,224 +62,265 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    const Color(0xff1a1a2e),
-                    const Color(0xff16213e),
-                    const Color(0xff0f3460),
-                  ]
-                : [
-                    const Color(0xff4285F4).withOpacity(0.1),
-                    const Color(0xff1aa260).withOpacity(0.1),
-                    const Color(0xffde5246).withOpacity(0.1),
-                  ],
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: RefreshIndicator(
-              onRefresh: () async {
-                setState(() {});
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // Header with theme toggle
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: isDark ? const Color(0xff0f172a) : const Color(0xfff8fafc),
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              setState(() {});
+            },
+            color: const Color(0xff6366f1),
+            child: CustomScrollView(
+              slivers: [
+                // Custom App Bar
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'COVID-19 Tracker',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                        ),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              onPressed: () => Get.to(() => const FavoritesScreen()),
-                              icon: Icon(
-                                Icons.favorite,
-                                color: Colors.red[400],
-                                size: 28,
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'COVID-19',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? Colors.white : const Color(0xff0f172a),
+                                    height: 1.2,
+                                  ),
+                                ),
+                                Text(
+                                  'Global Tracker',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Obx(() => IconButton(
-                              onPressed: themeController.toggleTheme,
-                              icon: Icon(
-                                themeController.isDarkMode.value
-                                    ? Icons.light_mode
-                                    : Icons.dark_mode,
-                                size: 28,
-                              ),
-                            )),
+                            Row(
+                              children: [
+                                _buildIconButton(
+                                  icon: Icons.favorite_rounded,
+                                  color: const Color(0xffef4444),
+                                  onTap: () => Get.to(() => const FavoritesScreen()),
+                                ),
+                                const SizedBox(width: 8),
+                                Obx(() => _buildIconButton(
+                                  icon: themeController.isDarkMode.value
+                                      ? Icons.light_mode_rounded
+                                      : Icons.dark_mode_rounded,
+                                  color: const Color(0xff6366f1),
+                                  onTap: themeController.toggleTheme,
+                                )),
+                              ],
+                            ),
                           ],
                         ),
+                        const SizedBox(height: 24),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                  ),
+                ),
 
-                    FutureBuilder(
-                      future: statesServices.fetchWorldStateRecords(),
-                      builder: (context, AsyncSnapshot<WorldStatesModel> snapshot) {
-                        if (!snapshot.hasData) {
-                          return Column(
+                // Main Content
+                SliverToBoxAdapter(
+                  child: FutureBuilder(
+                    future: statesServices.fetchWorldStateRecords(),
+                    builder: (context, AsyncSnapshot<WorldStatesModel> snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                              SpinKitPulsingGrid(
-                                color: const Color(0xff4285F4),
-                                size: 100,
+                              SpinKitRing(
+                                color: const Color(0xff6366f1),
+                                size: 50,
+                                lineWidth: 4,
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               Text(
                                 'Loading global data...',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: isDark ? Colors.white70 : Colors.black54,
+                                  fontSize: 14,
+                                  color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
-                          );
-                        } else {
-                          return Column(
+                          ),
+                        );
+                      } else {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
                             children: [
-                              // Main statistics card
-                              GlassmorphismCard(
+                              // Overview Card
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xff1e293b) : Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: isDark 
+                                          ? Colors.black.withOpacity(0.3)
+                                          : Colors.black.withOpacity(0.1),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Global Overview',
                                       style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: isDark ? Colors.white : Colors.black87,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark ? Colors.white : const Color(0xff0f172a),
                                       ),
                                     ),
                                     const SizedBox(height: 20),
                                     
-                                    // Pie Chart
-                                    
-                                    PieChart.PieChart(
-                                      dataMap: {
-                                        "Total Cases": double.parse(
-                                          snapshot.data!.cases!.toString(),
+                                    // Compact Chart
+                                    SizedBox(
+                                      height: 200,
+                                      child: PieChart.PieChart(
+                                        dataMap: {
+                                          "Cases": double.parse(snapshot.data!.cases!.toString()),
+                                          "Recovered": double.parse(snapshot.data!.recovered.toString()),
+                                          "Deaths": double.parse(snapshot.data!.deaths.toString()),
+                                        },
+                                        chartValuesOptions: const PieChart.ChartValuesOptions(
+                                          showChartValuesInPercentage: true,
+                                          chartValueStyle: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 11,
+                                            color: Colors.white,
+                                          ),
+                                          decimalPlaces: 1,
                                         ),
-                                        "Recovered": double.parse(
-                                          snapshot.data!.recovered.toString(),
+                                        chartRadius: 80,
+                                        legendOptions: PieChart.LegendOptions(
+                                          showLegends: true,
+                                          legendPosition: PieChart.LegendPosition.right,
+                                          legendTextStyle: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark ? const Color(0xff94a3b8) : const Color(0xff64748b),
+                                          ),
                                         ),
-                                        "Deaths": double.parse(
-                                          snapshot.data!.deaths.toString(),
-                                        ),
-                                      },
-                                      chartValuesOptions: const PieChart.ChartValuesOptions(
-                                        showChartValuesInPercentage: true,
-                                        chartValueStyle: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
+                                        animationDuration: const Duration(milliseconds: 1200),
+                                        chartType: PieChart.ChartType.disc,
+                                        colorList: colorList,
                                       ),
-                                      chartRadius: MediaQuery.of(context).size.width / 3.2,
-                                      legendOptions: PieChart.LegendOptions(
-                                        legendPosition: PieChart.LegendPosition.bottom,
-                                        showLegends: true,
-                                        legendTextStyle: TextStyle(
-                                          color: isDark ? Colors.white70 : Colors.black87,
-                                        ),
-                                      ),
-                                      animationDuration: const Duration(milliseconds: 1200),
-                                      chartType: PieChart.ChartType.ring,
-                                      colorList: colorList,
                                     ),
                                   ],
                                 ),
                               ),
+                              
                               const SizedBox(height: 20),
 
-                              // Statistics Grid
-                              GridView.count(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                crossAxisCount: 2,
-                                childAspectRatio: 1.5,
-                                crossAxisSpacing: 15,
-                                mainAxisSpacing: 15,
+                              // Key Stats Row
+                              Row(
                                 children: [
-                                  _buildStatCard(
-                                    'Total Cases',
-                                    snapshot.data!.cases.toString(),
-                                    Icons.coronavirus,
-                                    const Color(0xff4285F4),
+                                  Expanded(
+                                    child: _buildCompactStatCard(
+                                      'Total Cases',
+                                      snapshot.data!.cases.toString(),
+                                      const Color(0xff6366f1),
+                                      Icons.coronavirus_rounded,
+                                    ),
                                   ),
-                                  _buildStatCard(
-                                    'Deaths',
-                                    snapshot.data!.deaths.toString(),
-                                    Icons.dangerous,
-                                    const Color(0xffde5246),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildCompactStatCard(
+                                      'Recovered',
+                                      snapshot.data!.recovered.toString(),
+                                      const Color(0xff10b981),
+                                      Icons.health_and_safety_rounded,
+                                    ),
                                   ),
-                                  _buildStatCard(
-                                    'Recovered',
-                                    snapshot.data!.recovered.toString(),
-                                    Icons.health_and_safety,
-                                    const Color(0xff1aa260),
-                                  ),
-                                  _buildStatCard(
-                                    'Active',
-                                    snapshot.data!.active.toString(),
-                                    Icons.local_hospital,
-                                    const Color(0xffff9800),
-                                  ),
-                                  _buildStatCard(
-                                    'Critical',
-                                    snapshot.data!.critical.toString(),
-                                    Icons.warning,
-                                    const Color(0xfff44336),
-                                  ),
-                                  _buildStatCard(
-                                    'Today Deaths',
-                                    snapshot.data!.todayDeaths.toString(),
-                                    Icons.trending_up,
-                                    const Color(0xff9c27b0),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildCompactStatCard(
+                                      'Deaths',
+                                      snapshot.data!.deaths.toString(),
+                                      const Color(0xffef4444),
+                                      Icons.dangerous_rounded,
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 30),
 
-                              // Action buttons
-                              Column(
+                              const SizedBox(height: 16),
+
+                              // Secondary Stats
+                              Row(
                                 children: [
-                                  _buildActionButton(
-                                    'Track Countries',
-                                    Icons.public,
-                                    const Color(0xff1aa260),
-                                    () => Get.to(() => const CountriesListScreen()),
+                                  Expanded(
+                                    child: _buildSecondaryStatCard(
+                                      'Active',
+                                      snapshot.data!.active.toString(),
+                                      const Color(0xfff59e0b),
+                                    ),
                                   ),
-                                  const SizedBox(height: 15),
-                                  _buildActionButton(
-                                    'View Favorites',
-                                    Icons.favorite,
-                                    const Color(0xffde5246),
-                                    () => Get.to(() => const FavoritesScreen()),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildSecondaryStatCard(
+                                      'Critical',
+                                      snapshot.data!.critical.toString(),
+                                      const Color(0xffec4899),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildSecondaryStatCard(
+                                      'Today Deaths',
+                                      snapshot.data!.todayDeaths.toString(),
+                                      const Color(0xff8b5cf6),
+                                    ),
                                   ),
                                 ],
                               ),
+
+                              const SizedBox(height: 24),
+
+                              // Action Buttons
+                              _buildModernActionButton(
+                                'Explore Countries',
+                                Icons.public_rounded,
+                                const Color(0xff6366f1),
+                                () => Get.to(() => const CountriesListScreen()),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildModernActionButton(
+                                'View Favorites',
+                                Icons.favorite_rounded,
+                                const Color(0xffef4444),
+                                () => Get.to(() => const FavoritesScreen()),
+                              ),
+                              const SizedBox(height: 24),
                             ],
-                          );
-                        }
-                      },
-                    ),
-                  ],
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -287,63 +328,173 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildIconButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return GlassmorphismCard(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 30,
-            color: color,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xff1e293b) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: isDark 
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: color,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactStatCard(String title, String value, Color color, IconData icon) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xff1e293b) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark 
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 8),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 18,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             _formatNumber(value),
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : const Color(0xff0f172a),
+              height: 1,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             title,
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? Colors.white70 : Colors.black54,
+              fontWeight: FontWeight.w500,
+              color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton(String text, IconData icon, Color color, VoidCallback onTap) {
-    return GlassmorphismCard(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ],
+  Widget _buildSecondaryStatCard(String title, String value, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _formatNumber(value),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: color,
+              height: 1,
+            ),
           ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernActionButton(String text, IconData icon, Color color, VoidCallback onTap) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );

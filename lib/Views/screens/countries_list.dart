@@ -42,180 +42,223 @@ class _CountriesListScreenState extends State<CountriesListScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    const Color(0xff1a1a2e),
-                    const Color(0xff16213e),
-                    const Color(0xff0f3460),
-                  ]
-                : [
-                    const Color(0xff4285F4).withOpacity(0.1),
-                    const Color(0xff1aa260).withOpacity(0.1),
-                    const Color(0xffde5246).withOpacity(0.1),
-                  ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Custom App Bar
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(
-                        Icons.arrow_back_ios,
-                        color: isDark ? Colors.white : Colors.black87,
+      backgroundColor: isDark ? const Color(0xff0f172a) : const Color(0xfff8fafc),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Modern App Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xff1e293b) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark 
+                                ? Colors.black.withOpacity(0.3)
+                                : Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_ios_rounded,
+                        color: isDark ? Colors.white : const Color(0xff0f172a),
+                        size: 18,
                       ),
                     ),
-                    Expanded(
-                      child: Text(
-                        'Countries',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                        textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Countries',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xff0f172a),
                       ),
                     ),
-                    const SizedBox(width: 40),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xff1e293b) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark 
+                          ? Colors.black.withOpacity(0.3)
+                          : Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
                   ],
                 ),
-              ),
-
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: GlassmorphismCard(
-                  child: TextFormField(
-                    controller: searchController,
-                    onChanged: (value) {
-                      setState(() {});
-                    },
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
+                child: TextFormField(
+                  controller: searchController,
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xff0f172a),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    hintText: 'Search countries...',
+                    hintStyle: TextStyle(
+                      color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                      hintText: 'Search countries...',
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.white54 : Colors.black54,
+                    border: InputBorder.none,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 16),
+                      child: Icon(
+                        Icons.search_rounded,
+                        color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                        size: 20,
                       ),
-                      border: InputBorder.none,
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: isDark ? Colors.white54 : Colors.black54,
-                      ),
-                      suffixIcon: searchController.text.isNotEmpty
-                          ? IconButton(
-                              onPressed: () {
-                                searchController.clear();
-                                setState(() {});
-                              },
-                              icon: Icon(
-                                Icons.clear,
-                                color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                    suffixIcon: searchController.text.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () {
+                              searchController.clear();
+                              setState(() {});
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 20),
+                              child: Icon(
+                                Icons.clear_rounded,
+                                color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                                size: 20,
                               ),
-                            )
-                          : null,
-                    ),
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-              // Filter Chips
-              SizedBox(
-                height: 50,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    _buildFilterChip('All'),
-                    _buildFilterChip('Favorites'),
-                    _buildFilterChip('High Cases'),
-                    _buildFilterChip('Low Cases'),
-                  ],
-                ),
+            // Filter Chips
+            SizedBox(
+              height: 40,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                children: [
+                  _buildFilterChip('All'),
+                  _buildFilterChip('Favorites'),
+                  _buildFilterChip('High Cases'),
+                  _buildFilterChip('Low Cases'),
+                ],
               ),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-              // Countries List
-              Expanded(
-                child: FutureBuilder(
-                  future: statesServices.countriesListApi(),
-                  builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                    if (!snapshot.hasData) {
-                      return ListView.builder(
-                        itemCount: 10,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemBuilder: (context, index) {
-                          return _buildShimmerCard();
-                        },
-                      );
-                    } else {
-                      List<dynamic> filteredData = _filterCountries(snapshot.data!);
-                      
-                      if (filteredData.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 80,
-                                color: isDark ? Colors.white54 : Colors.black54,
+            // Countries List
+            Expanded(
+              child: FutureBuilder(
+                future: statesServices.countriesListApi(),
+                builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                  if (!snapshot.hasData) {
+                    return ListView.builder(
+                      itemCount: 8,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemBuilder: (context, index) {
+                        return _buildShimmerCard();
+                      },
+                    );
+                  } else {
+                    List<dynamic> filteredData = _filterCountries(snapshot.data!);
+                    
+                    if (filteredData.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: const Color(0xff64748b).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No countries found',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: isDark ? Colors.white54 : Colors.black54,
-                                ),
+                              child: Icon(
+                                Icons.search_off_rounded,
+                                size: 40,
+                                color: const Color(0xff64748b),
                               ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return ListView.builder(
-                        itemCount: filteredData.length,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemBuilder: (context, index) {
-                          final country = filteredData[index];
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1, 0),
-                              end: Offset.zero,
-                            ).animate(CurvedAnimation(
-                              parent: _animationController,
-                              curve: Interval(
-                                index * 0.1,
-                                1.0,
-                                curve: Curves.easeOut,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No countries found',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : const Color(0xff0f172a),
                               ),
-                            )),
-                            child: _buildCountryCard(country),
-                          );
-                        },
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Try adjusting your search or filters',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: const Color(0xff64748b),
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     }
-                  },
-                ),
+
+                    return ListView.builder(
+                      itemCount: filteredData.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemBuilder: (context, index) {
+                        final country = filteredData[index];
+                        return SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(1, 0),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(
+                            parent: _animationController,
+                            curve: Interval(
+                              (index * 0.05).clamp(0.0, 1.0),
+                              1.0,
+                              curve: Curves.easeOut,
+                            ),
+                          )),
+                          child: _buildCountryCard(country),
+                        );
+                      },
+                    );
+                  }
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -227,29 +270,53 @@ class _CountriesListScreenState extends State<CountriesListScreen>
     
     return Padding(
       padding: const EdgeInsets.only(right: 12),
-      child: FilterChip(
-        label: Text(
-          filter,
-          style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : (isDark ? Colors.white70 : Colors.black87),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-        selected: isSelected,
-        onSelected: (selected) {
+      child: GestureDetector(
+        onTap: () {
           setState(() {
             selectedFilter = filter;
           });
         },
-        backgroundColor: isDark 
-            ? Colors.grey[800]?.withOpacity(0.3)
-            : Colors.white.withOpacity(0.7),
-        selectedColor: const Color(0xff4285F4),
-        checkmarkColor: Colors.white,
-        elevation: 2,
-        shadowColor: Colors.black26,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected 
+                ? const Color(0xff6366f1)
+                : (isDark ? const Color(0xff1e293b) : Colors.white),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected 
+                  ? const Color(0xff6366f1)
+                  : const Color(0xff64748b).withOpacity(0.2),
+              width: 1,
+            ),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: const Color(0xff6366f1).withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ] : [
+              BoxShadow(
+                color: isDark 
+                    ? Colors.black.withOpacity(0.2)
+                    : Colors.black.withOpacity(0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            filter,
+            style: TextStyle(
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? const Color(0xff94a3b8) : const Color(0xff64748b)),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              fontSize: 14,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -260,14 +327,19 @@ class _CountriesListScreenState extends State<CountriesListScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Shimmer.fromColors(
-        baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-        highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
-        child: GlassmorphismCard(
+        baseColor: isDark ? const Color(0xff1e293b) : Colors.grey[200]!,
+        highlightColor: isDark ? const Color(0xff334155) : Colors.grey[100]!,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Row(
             children: [
               Container(
-                width: 60,
-                height: 40,
+                width: 50,
+                height: 35,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -289,7 +361,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                     const SizedBox(height: 8),
                     Container(
                       height: 12,
-                      width: 100,
+                      width: 120,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(4),
@@ -311,107 +383,149 @@ class _CountriesListScreenState extends State<CountriesListScreen>
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: GlassmorphismCard(
-        child: InkWell(
-          onTap: () {
-            Get.to(() => DetailScreen(
-              name: countryName,
-              image: country['countryInfo']?['flag'] ?? '',
-              totalCases: country['cases'] ?? 0,
-              totalRecovered: country['recovered'] ?? 0,
-              totalDeaths: country['deaths'] ?? 0,
-              test: country['tests'] ?? 0,
-              active: country['active'] ?? 0,
-              critical: country['critical'] ?? 0,
-              todayRecovered: country['todayRecovered'] ?? 0,
-            ));
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Flag
-                ClipRRect(
+      child: GestureDetector(
+        onTap: () {
+          Get.to(() => DetailScreen(
+            name: countryName,
+            image: country['countryInfo']?['flag'] ?? '',
+            totalCases: country['cases'] ?? 0,
+            totalRecovered: country['recovered'] ?? 0,
+            totalDeaths: country['deaths'] ?? 0,
+            test: country['tests'] ?? 0,
+            active: country['active'] ?? 0,
+            critical: country['critical'] ?? 0,
+            todayRecovered: country['todayRecovered'] ?? 0,
+          ));
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xff1e293b) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: isDark 
+                    ? Colors.black.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Flag
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
                     country['countryInfo']?['flag'] ?? '',
-                    width: 60,
-                    height: 40,
+                    width: 50,
+                    height: 35,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        width: 60,
-                        height: 40,
+                        width: 50,
+                        height: 35,
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: const Color(0xff64748b).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.flag, color: Colors.grey),
+                        child: Icon(
+                          Icons.flag_rounded,
+                          color: const Color(0xff64748b),
+                          size: 20,
+                        ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(width: 16),
-                
-                // Country Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        countryName,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
+              ),
+              const SizedBox(width: 16),
+              
+              // Country Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      countryName,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xff0f172a),
+                        height: 1.2,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Cases: ${_formatNumber((country['cases'] ?? 0).toString())}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Risk Indicator
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _getRiskColor(country['cases'] ?? 0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _getRiskLevel(country['cases'] ?? 0),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Cases: ${_formatNumber((country['cases'] ?? 0).toString())}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xff64748b),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Risk Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getRiskColor(country['cases'] ?? 0),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _getRiskLevel(country['cases'] ?? 0),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
                   ),
                 ),
-                
-                const SizedBox(width: 8),
-                
-                // Favorite Button
-                Obx(() => IconButton(
-                  onPressed: () {
-                    favoritesController.toggleFavorite(countryName);
-                  },
-                  icon: Icon(
-                    favoritesController.isFavorite(countryName)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: Colors.red[400],
+              ),
+              
+              const SizedBox(width: 12),
+              
+              // Favorite Button
+              Obx(() => GestureDetector(
+                onTap: () {
+                  favoritesController.toggleFavorite(countryName);
+                },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: favoritesController.isFavorite(countryName)
+                        ? const Color(0xffef4444).withOpacity(0.1)
+                        : const Color(0xff64748b).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                )),
-              ],
-            ),
+                  child: Icon(
+                    favoritesController.isFavorite(countryName)
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    color: favoritesController.isFavorite(countryName)
+                        ? const Color(0xffef4444)
+                        : const Color(0xff64748b),
+                    size: 18,
+                  ),
+                ),
+              )),
+            ],
           ),
         ),
       ),
@@ -450,10 +564,10 @@ class _CountriesListScreenState extends State<CountriesListScreen>
   }
 
   Color _getRiskColor(int cases) {
-    if (cases > 10000000) return Colors.red[700]!;
-    if (cases > 1000000) return Colors.orange[600]!;
-    if (cases > 100000) return Colors.yellow[700]!;
-    return Colors.green[600]!;
+    if (cases > 10000000) return const Color(0xffef4444);
+    if (cases > 1000000) return const Color(0xfff59e0b);
+    if (cases > 100000) return const Color(0xff3b82f6);
+    return const Color(0xff10b981);
   }
 
   String _getRiskLevel(int cases) {

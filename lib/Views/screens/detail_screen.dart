@@ -59,231 +59,235 @@ class _DetailScreenState extends State<DetailScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    const Color(0xff1a1a2e),
-                    const Color(0xff16213e),
-                    const Color(0xff0f3460),
-                  ]
-                : [
-                    const Color(0xff4285F4).withOpacity(0.1),
-                    const Color(0xff1aa260).withOpacity(0.1),
-                    const Color(0xffde5246).withOpacity(0.1),
-                  ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Custom App Bar with Hero Image
-              Container(
-                height: 200,
-                child: Stack(
-                  children: [
-                    // Background with blur effect
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(30),
-                          bottomRight: Radius.circular(30),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(30),
-                          bottomRight: Radius.circular(30),
-                        ),
-                        child: Container(
-                          color: isDark 
-                              ? Colors.grey[900]?.withOpacity(0.9)
-                              : Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                    ),
-                    
-                    // Content
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          // Top bar with back button and actions
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                onPressed: () => Navigator.pop(context),
-                                icon: Icon(
-                                  Icons.arrow_back_ios,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: _shareCountryData,
-                                    icon: Icon(
-                                      Icons.share,
-                                      color: isDark ? Colors.white : Colors.black87,
-                                    ),
-                                  ),
-                                  Obx(() => IconButton(
-                                    onPressed: () {
-                                      favoritesController.toggleFavorite(widget.name);
-                                    },
-                                    icon: Icon(
-                                      favoritesController.isFavorite(widget.name)
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color: Colors.red[400],
-                                    ),
-                                  )),
-                                ],
-                              ),
-                            ],
-                          ),
-                          
-                          const SizedBox(height: 20),
-                          
-                          // Country info
-                          Row(
-                            children: [
-                              // Flag
-                              Hero(
-                                tag: 'flag_${widget.name}',
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      widget.image,
-                                      width: 80,
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          width: 80,
-                                          height: 60,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[300],
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: const Icon(Icons.flag, color: Colors.grey),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              
-                              const SizedBox(width: 16),
-                              
-                              // Country name and risk level
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      widget.name,
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: isDark ? Colors.white : Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: _getRiskColor(),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        'Risk Level: ${_getRiskLevel()}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+      backgroundColor: isDark ? const Color(0xff0f172a) : const Color(0xfff8fafc),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Modern Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xff1e293b) : Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark 
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-
-              // Tab Bar
-              Container(
-                margin: const EdgeInsets.all(16),
-                child: GlassmorphismCard(
-                  child: TabBar(
-                    controller: _tabController,
-                    indicatorColor: const Color(0xff4285F4),
-                    indicatorWeight: 3,
-                    labelColor: const Color(0xff4285F4),
-                    unselectedLabelColor: isDark ? Colors.white70 : Colors.black54,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    tabs: const [
-                      Tab(
-                        icon: Icon(Icons.bar_chart),
-                        text: 'Overview',
+              child: Column(
+                children: [
+                  // Top Actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xff334155) : const Color(0xfff1f5f9),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: isDark ? Colors.white : const Color(0xff0f172a),
+                            size: 18,
+                          ),
+                        ),
                       ),
-                      Tab(
-                        icon: Icon(Icons.trending_up),
-                        text: 'Trends',
-                      ),
-                      Tab(
-                        icon: Icon(Icons.vaccines),
-                        text: 'Vaccination',
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: _shareCountryData,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xff334155) : const Color(0xfff1f5f9),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.share_rounded,
+                                color: isDark ? Colors.white : const Color(0xff0f172a),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Obx(() => GestureDetector(
+                            onTap: () {
+                              favoritesController.toggleFavorite(widget.name);
+                            },
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: favoritesController.isFavorite(widget.name)
+                                    ? const Color(0xffef4444).withOpacity(0.1)
+                                    : (isDark ? const Color(0xff334155) : const Color(0xfff1f5f9)),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                favoritesController.isFavorite(widget.name)
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                color: favoritesController.isFavorite(widget.name)
+                                    ? const Color(0xffef4444)
+                                    : (isDark ? Colors.white : const Color(0xff0f172a)),
+                                size: 18,
+                              ),
+                            ),
+                          )),
+                        ],
                       ),
                     ],
                   ),
-                ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Country Info
+                  Row(
+                    children: [
+                      // Flag
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(
+                            widget.image,
+                            width: 70,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 70,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xff64748b).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: const Icon(Icons.flag_rounded, color: Color(0xff64748b)),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(width: 16),
+                      
+                      // Country Details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.name,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? Colors.white : const Color(0xff0f172a),
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: _getRiskColor().withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _getRiskColor().withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                'Risk Level: ${_getRiskLevel()}',
+                                style: TextStyle(
+                                  color: _getRiskColor(),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
 
-              // Tab Content
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildOverviewTab(),
-                    _buildTrendsTab(),
-                    _buildVaccinationTab(),
-                  ],
-                ),
+            // Modern Tab Bar
+            Container(
+              margin: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xff1e293b) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark 
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
-          ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: const Color(0xff6366f1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelColor: Colors.white,
+                unselectedLabelColor: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(text: 'Overview'),
+                  Tab(text: 'Trends'),
+                  Tab(text: 'Vaccination'),
+                ],
+              ),
+            ),
+
+            // Tab Content
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildOverviewTab(),
+                  _buildTrendsTab(),
+                  _buildVaccinationTab(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -293,103 +297,145 @@ class _DetailScreenState extends State<DetailScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
-          // Quick Stats Grid
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            childAspectRatio: 1.3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+          // Primary Stats Row
+          Row(
             children: [
-              _buildStatCard(
-                'Total Cases',
-                widget.totalCases.toString(),
-                Icons.coronavirus,
-                const Color(0xff4285F4),
+              Expanded(
+                child: _buildStatCard(
+                  'Total Cases',
+                  widget.totalCases.toString(),
+                  Icons.coronavirus_rounded,
+                  const Color(0xff6366f1),
+                  isLarge: true,
+                ),
               ),
-              _buildStatCard(
-                'Deaths',
-                widget.totalDeaths.toString(),
-                Icons.dangerous,
-                const Color(0xffde5246),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Deaths',
+                  widget.totalDeaths.toString(),
+                  Icons.dangerous_rounded,
+                  const Color(0xffef4444),
+                  isLarge: true,
+                ),
               ),
-              _buildStatCard(
-                'Recovered',
-                widget.totalRecovered.toString(),
-                Icons.health_and_safety,
-                const Color(0xff1aa260),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Secondary Stats Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Recovered',
+                  widget.totalRecovered.toString(),
+                  Icons.health_and_safety_rounded,
+                  const Color(0xff10b981),
+                ),
               ),
-              _buildStatCard(
-                'Active',
-                widget.active.toString(),
-                Icons.local_hospital,
-                const Color(0xffff9800),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Active',
+                  widget.active.toString(),
+                  Icons.local_hospital_rounded,
+                  const Color(0xfff59e0b),
+                ),
               ),
-              _buildStatCard(
-                'Critical',
-                widget.critical.toString(),
-                Icons.warning,
-                const Color(0xfff44336),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Tertiary Stats Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Critical',
+                  widget.critical.toString(),
+                  Icons.warning_rounded,
+                  const Color(0xffec4899),
+                ),
               ),
-              _buildStatCard(
-                'Tests',
-                widget.test.toString(),
-                Icons.science,
-                const Color(0xff9c27b0),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Tests',
+                  widget.test.toString(),
+                  Icons.science_rounded,
+                  const Color(0xff8b5cf6),
+                ),
               ),
             ],
           ),
           
           const SizedBox(height: 20),
           
-          // Recovery Rate Card
-          GlassmorphismCard(
+          // Recovery Analysis Card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xff1e293b) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark 
+                      ? Colors.black.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Recovery Analysis',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : const Color(0xff0f172a),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 
-                // Recovery Rate Progress
                 _buildProgressIndicator(
                   'Recovery Rate',
                   widget.totalRecovered,
                   widget.totalCases,
-                  const Color(0xff1aa260),
+                  const Color(0xff10b981),
                 ),
                 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 
-                // Mortality Rate Progress
                 _buildProgressIndicator(
                   'Mortality Rate',
                   widget.totalDeaths,
                   widget.totalCases,
-                  const Color(0xffde5246),
+                  const Color(0xffef4444),
                 ),
                 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 
-                // Active Cases Progress
                 _buildProgressIndicator(
                   'Active Cases',
                   widget.active,
                   widget.totalCases,
-                  const Color(0xffff9800),
+                  const Color(0xfff59e0b),
                 ),
               ],
             ),
           ),
+          
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -399,40 +445,75 @@ class _DetailScreenState extends State<DetailScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
-          GlassmorphismCard(
+          // Chart Container
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xff1e293b) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark 
+                      ? Colors.black.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Historical Trends (Mock Data)',
+                  'Historical Trends',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : const Color(0xff0f172a),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 4),
+                Text(
+                  'Last 30 days (Simulated data)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: const Color(0xff64748b),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 
                 // Line Chart
                 SizedBox(
                   height: 200,
                   child: LineChart(
                     LineChartData(
-                      gridData: FlGridData(show: false),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: 1,
+                        getDrawingHorizontalLine: (value) {
+                          return FlLine(
+                            color: const Color(0xff64748b).withOpacity(0.2),
+                            strokeWidth: 1,
+                          );
+                        },
+                      ),
                       titlesData: FlTitlesData(
                         leftTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
-                            reservedSize: 40,
+                            reservedSize: 50,
                             getTitlesWidget: (value, meta) {
                               return Text(
                                 _formatChartNumber(value),
                                 style: TextStyle(
-                                  color: isDark ? Colors.white70 : Colors.black54,
-                                  fontSize: 10,
+                                  color: const Color(0xff64748b),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               );
                             },
@@ -441,14 +522,16 @@ class _DetailScreenState extends State<DetailScreen>
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
+                            interval: 1,
                             getTitlesWidget: (value, meta) {
-                              const days = ['7d', '14d', '21d', '30d'];
+                              const days = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
                               if (value.toInt() < days.length) {
                                 return Text(
                                   days[value.toInt()],
                                   style: TextStyle(
-                                    color: isDark ? Colors.white70 : Colors.black54,
-                                    fontSize: 10,
+                                    color: const Color(0xff64748b),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 );
                               }
@@ -461,31 +544,28 @@ class _DetailScreenState extends State<DetailScreen>
                       ),
                       borderData: FlBorderData(show: false),
                       lineBarsData: [
-                        // Cases line
                         LineChartBarData(
                           spots: _generateMockDataPoints(widget.totalCases.toDouble()),
                           isCurved: true,
-                          color: const Color(0xff4285F4),
+                          color: const Color(0xff6366f1),
                           barWidth: 3,
                           dotData: const FlDotData(show: false),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: const Color(0xff4285F4).withOpacity(0.1),
+                            color: const Color(0xff6366f1).withOpacity(0.1),
                           ),
                         ),
-                        // Deaths line
                         LineChartBarData(
                           spots: _generateMockDataPoints(widget.totalDeaths.toDouble()),
                           isCurved: true,
-                          color: const Color(0xffde5246),
+                          color: const Color(0xffef4444),
                           barWidth: 3,
                           dotData: const FlDotData(show: false),
                         ),
-                        // Recovered line
                         LineChartBarData(
                           spots: _generateMockDataPoints(widget.totalRecovered.toDouble()),
                           isCurved: true,
-                          color: const Color(0xff1aa260),
+                          color: const Color(0xff10b981),
                           barWidth: 3,
                           dotData: const FlDotData(show: false),
                         ),
@@ -494,15 +574,15 @@ class _DetailScreenState extends State<DetailScreen>
                   ),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 
                 // Legend
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildLegendItem('Cases', const Color(0xff4285F4)),
-                    _buildLegendItem('Deaths', const Color(0xffde5246)),
-                    _buildLegendItem('Recovered', const Color(0xff1aa260)),
+                    _buildLegendItem('Cases', const Color(0xff6366f1)),
+                    _buildLegendItem('Deaths', const Color(0xffef4444)),
+                    _buildLegendItem('Recovered', const Color(0xff10b981)),
                   ],
                 ),
               ],
@@ -515,70 +595,26 @@ class _DetailScreenState extends State<DetailScreen>
           Row(
             children: [
               Expanded(
-                child: GlassmorphismCard(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.trending_up,
-                        size: 30,
-                        color: Colors.green[600],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Growth Rate',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '+${Random().nextInt(5) + 1}%',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green[600],
-                        ),
-                      ),
-                    ],
-                  ),
+                child: _buildMetricCard(
+                  'Growth Rate',
+                  '+${Random().nextInt(5) + 1}%',
+                  Icons.trending_up_rounded,
+                  const Color(0xff10b981),
                 ),
               ),
-              
               const SizedBox(width: 12),
-              
               Expanded(
-                child: GlassmorphismCard(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.speed,
-                        size: 30,
-                        color: Colors.blue[600],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Test Rate',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${((widget.test / widget.totalCases) * 100).toStringAsFixed(1)}%',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[600],
-                        ),
-                      ),
-                    ],
-                  ),
+                child: _buildMetricCard(
+                  'Test Rate',
+                  '${((widget.test / widget.totalCases) * 100).toStringAsFixed(1)}%',
+                  Icons.speed_rounded,
+                  const Color(0xff6366f1),
                 ),
               ),
             ],
           ),
+          
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -592,100 +628,122 @@ class _DetailScreenState extends State<DetailScreen>
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(color: Color(0xff6366f1)),
           );
         }
         
         final vaccination = snapshot.data ?? VaccinationModel();
         
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
               // Vaccination Progress Card
-              GlassmorphismCard(
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xff1e293b) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark 
+                          ? Colors.black.withOpacity(0.3)
+                          : Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Vaccination Progress',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xff0f172a),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     
-                    // Vaccination Chart
+                    // Pie Chart
                     SizedBox(
-                      height: 120,
+                      height: 160,
                       child: Row(
                         children: [
                           Expanded(
-                            flex: 3,
                             child: PieChart(
                               PieChartData(
                                 sections: [
                                   PieChartSectionData(
                                     value: (vaccination.peopleVaccinated ?? 0).toDouble(),
-                                    color: const Color(0xff1aa260),
-                                    title: 'Vaccinated',
+                                    color: const Color(0xff10b981),
+                                    title: '${((vaccination.peopleVaccinated ?? 0) / (vaccination.population ?? 1) * 100).toStringAsFixed(1)}%',
                                     titleStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
+                                    radius: 50,
                                   ),
                                   PieChartSectionData(
                                     value: (vaccination.peoplePartiallyVaccinated ?? 0).toDouble() - 
                                            (vaccination.peopleVaccinated ?? 0).toDouble(),
-                                    color: const Color(0xff4285F4),
-                                    title: 'Partial',
+                                    color: const Color(0xff6366f1),
+                                    title: '${(((vaccination.peoplePartiallyVaccinated ?? 0) - (vaccination.peopleVaccinated ?? 0)) / (vaccination.population ?? 1) * 100).toStringAsFixed(1)}%',
                                     titleStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
+                                    radius: 50,
                                   ),
                                   PieChartSectionData(
                                     value: (vaccination.population ?? 1000000).toDouble() - 
                                            (vaccination.peoplePartiallyVaccinated ?? 0).toDouble(),
-                                    color: Colors.grey[400]!,
-                                    title: 'Unvaccinated',
+                                    color: const Color(0xff64748b).withOpacity(0.3),
+                                    title: '${(((vaccination.population ?? 1000000) - (vaccination.peoplePartiallyVaccinated ?? 0)) / (vaccination.population ?? 1000000) * 100).toStringAsFixed(1)}%',
                                     titleStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
                                       color: Colors.white,
                                     ),
+                                    radius: 50,
                                   ),
                                 ],
                                 sectionsSpace: 2,
-                                centerSpaceRadius: 40,
+                                centerSpaceRadius: 30,
                               ),
                             ),
                           ),
                           
+                          const SizedBox(width: 20),
+                          
                           Expanded(
-                            flex: 2,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 _buildVaccinationLegend(
                                   'Fully Vaccinated',
                                   vaccination.peopleVaccinated ?? 0,
-                                  const Color(0xff1aa260),
+                                  const Color(0xff10b981),
                                 ),
+                                const SizedBox(height: 12),
                                 _buildVaccinationLegend(
                                   'Partially Vaccinated',
                                   (vaccination.peoplePartiallyVaccinated ?? 0) - 
                                   (vaccination.peopleVaccinated ?? 0),
-                                  const Color(0xff4285F4),
+                                  const Color(0xff6366f1),
                                 ),
+                                const SizedBox(height: 12),
                                 _buildVaccinationLegend(
                                   'Unvaccinated',
                                   (vaccination.population ?? 1000000) - 
                                   (vaccination.peoplePartiallyVaccinated ?? 0),
-                                  Colors.grey[400]!,
+                                  const Color(0xff64748b).withOpacity(0.6),
                                 ),
                               ],
                             ),
@@ -700,40 +758,53 @@ class _DetailScreenState extends State<DetailScreen>
               const SizedBox(height: 20),
               
               // Vaccination Stats Grid
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                childAspectRatio: 1.5,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+              Row(
                 children: [
-                  _buildVaccinationStatCard(
-                    'Total Doses',
-                    (vaccination.administered ?? 0).toString(),
-                    Icons.vaccines,
-                    const Color(0xff4285F4),
+                  Expanded(
+                    child: _buildVaccinationStatCard(
+                      'Total Doses',
+                      (vaccination.administered ?? 0).toString(),
+                      Icons.vaccines_rounded,
+                      const Color(0xff6366f1),
+                    ),
                   ),
-                  _buildVaccinationStatCard(
-                    'Fully Vaccinated',
-                    (vaccination.peopleVaccinated ?? 0).toString(),
-                    Icons.shield,
-                    const Color(0xff1aa260),
-                  ),
-                  _buildVaccinationStatCard(
-                    'Population',
-                    (vaccination.population ?? 0).toString(),
-                    Icons.people,
-                    const Color(0xff9c27b0),
-                  ),
-                  _buildVaccinationStatCard(
-                    'Coverage',
-                    '${(((vaccination.peopleVaccinated ?? 0) / (vaccination.population ?? 1) * 100)).toStringAsFixed(1)}%',
-                    Icons.analytics,
-                    const Color(0xffff9800),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildVaccinationStatCard(
+                      'Fully Vaccinated',
+                      (vaccination.peopleVaccinated ?? 0).toString(),
+                      Icons.shield_rounded,
+                      const Color(0xff10b981),
+                    ),
                   ),
                 ],
               ),
+              
+              const SizedBox(height: 12),
+              
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildVaccinationStatCard(
+                      'Population',
+                      (vaccination.population ?? 0).toString(),
+                      Icons.people_rounded,
+                      const Color(0xff8b5cf6),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildVaccinationStatCard(
+                      'Coverage',
+                      '${(((vaccination.peopleVaccinated ?? 0) / (vaccination.population ?? 1) * 100)).toStringAsFixed(1)}%',
+                      Icons.analytics_rounded,
+                      const Color(0xfff59e0b),
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 20),
             ],
           ),
         );
@@ -741,35 +812,62 @@ class _DetailScreenState extends State<DetailScreen>
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String title, String value, IconData icon, Color color, {bool isLarge = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return GlassmorphismCard(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 32,
-            color: color,
+    return Container(
+      padding: EdgeInsets.all(isLarge ? 20 : 16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xff1e293b) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark 
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 8),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: isLarge ? 40 : 32,
+            height: isLarge ? 40 : 32,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: isLarge ? 22 : 18,
+            ),
+          ),
+          SizedBox(height: isLarge ? 16 : 12),
           Text(
             _formatNumber(value),
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+              fontSize: isLarge ? 24 : 18,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : const Color(0xff0f172a),
+              height: 1,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
             style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: isLarge ? 14 : 12,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xff64748b),
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -779,30 +877,116 @@ class _DetailScreenState extends State<DetailScreen>
   Widget _buildVaccinationStatCard(String title, String value, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return GlassmorphismCard(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 28,
-            color: color,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xff1e293b) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark 
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 6),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 18,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             title.contains('%') ? value : _formatNumber(value),
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : const Color(0xff0f172a),
+              height: 1,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             title,
             style: TextStyle(
-              fontSize: 11,
-              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xff64748b),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(String title, String value, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xff1e293b) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDark 
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: color,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xff64748b),
             ),
             textAlign: TextAlign.center,
           ),
@@ -825,26 +1009,38 @@ class _DetailScreenState extends State<DetailScreen>
               title,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white70 : Colors.black87,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : const Color(0xff0f172a),
               ),
             ),
             Text(
               '${(percentage * 100).toStringAsFixed(1)}%',
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
                 color: color,
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: percentage,
-          backgroundColor: isDark ? Colors.grey[700] : Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(color),
-          minHeight: 6,
+        Container(
+          height: 8,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xff334155) : const Color(0xfff1f5f9),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: percentage.clamp(0.0, 1.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -861,7 +1057,7 @@ class _DetailScreenState extends State<DetailScreen>
           height: 12,
           decoration: BoxDecoration(
             color: color,
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
         const SizedBox(width: 6),
@@ -869,7 +1065,8 @@ class _DetailScreenState extends State<DetailScreen>
           title,
           style: TextStyle(
             fontSize: 12,
-            color: isDark ? Colors.white70 : Colors.black54,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xff64748b),
           ),
         ),
       ],
@@ -879,43 +1076,42 @@ class _DetailScreenState extends State<DetailScreen>
   Widget _buildVaccinationLegend(String title, int value, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: isDark ? Colors.white70 : Colors.black54,
-                  ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xff64748b),
                 ),
-                Text(
-                  _formatNumber(value.toString()),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+              ),
+              Text(
+                _formatNumber(value.toString()),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : const Color(0xff0f172a),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -930,10 +1126,10 @@ class _DetailScreenState extends State<DetailScreen>
   }
 
   Color _getRiskColor() {
-    if (widget.totalCases > 10000000) return Colors.red[700]!;
-    if (widget.totalCases > 1000000) return Colors.orange[600]!;
-    if (widget.totalCases > 100000) return Colors.yellow[700]!;
-    return Colors.green[600]!;
+    if (widget.totalCases > 10000000) return const Color(0xffef4444);
+    if (widget.totalCases > 1000000) return const Color(0xfff59e0b);
+    if (widget.totalCases > 100000) return const Color(0xff3b82f6);
+    return const Color(0xff10b981);
   }
 
   String _getRiskLevel() {
