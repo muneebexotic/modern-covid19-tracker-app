@@ -1,6 +1,6 @@
 import 'package:covid19_tracker_flutter/Models/WorldStatesModel.dart';
 import 'package:covid19_tracker_flutter/Services/states_services.dart';
-import 'package:covid19_tracker_flutter/View/countries_list.dart';
+import 'package:covid19_tracker_flutter/Views/screens/countries_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pie_chart/pie_chart.dart';

@@ -19,6 +19,8 @@ dependencies:
   pie_chart: ^5.4.0
   flutter_spinkit: ^5.2.1
   shimmer: ^3.0.0
+  get: ^4.7.2
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:
