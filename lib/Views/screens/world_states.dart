@@ -1,7 +1,7 @@
 import 'package:covid19_tracker_flutter/Controllers/favorites_controller.dart';
 import 'package:covid19_tracker_flutter/Controllers/theme_controller.dart';
 import 'package:covid19_tracker_flutter/Models/WorldStatesModel.dart';
-import 'package:covid19_tracker_flutter/Services/states_services.dart';
+import 'package:covid19_tracker_flutter/Services/states_service.dart';
 import 'package:covid19_tracker_flutter/Views/screens/countries_list.dart';
 import 'package:covid19_tracker_flutter/Views/screens/favorites_screen.dart';
 import 'package:covid19_tracker_flutter/Views/widgets/glassmorphism_card.dart';

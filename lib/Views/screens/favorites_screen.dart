@@ -1,6 +1,7 @@
 import 'package:covid19_tracker_flutter/Controllers/favorites_controller.dart';
-import 'package:covid19_tracker_flutter/Services/states_services.dart';
-import 'package:covid19_tracker_flutter/Views/screens/detail_screen.dart';
+import 'package:covid19_tracker_flutter/Models/CountryDetailModel.dart';
+import 'package:covid19_tracker_flutter/Services/states_service.dart';
+import 'package:covid19_tracker_flutter/Views/screens/detail_screen/detail_screen.dart';
 import 'package:covid19_tracker_flutter/Views/widgets/glassmorphism_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,7 +22,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xff0f172a) : const Color(0xfff8fafc),
+      backgroundColor: isDark
+          ? const Color(0xff0f172a)
+          : const Color(0xfff8fafc),
       body: SafeArea(
         child: Column(
           children: [
@@ -40,7 +43,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: isDark 
+                            color: isDark
                                 ? Colors.black.withOpacity(0.3)
                                 : Colors.black.withOpacity(0.1),
                             blurRadius: 10,
@@ -65,18 +68,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : const Color(0xff0f172a),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xff0f172a),
                             height: 1.2,
                           ),
                         ),
-                        Obx(() => Text(
-                          '${favoritesController.favoriteCountries.length} countries',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xff64748b),
+                        Obx(
+                          () => Text(
+                            '${favoritesController.favoriteCountries.length} countries',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xff64748b),
+                            ),
                           ),
-                        )),
+                        ),
                       ],
                     ),
                   ),
@@ -113,7 +120,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : const Color(0xff0f172a),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xff0f172a),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -130,13 +139,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xff6366f1),
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xff6366f1).withOpacity(0.3),
+                                  color: const Color(
+                                    0xff6366f1,
+                                  ).withOpacity(0.3),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -180,8 +194,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     }
 
                     final favoriteData = snapshot.data!.where((country) {
-                      return favoritesController.favoriteCountries
-                          .contains(country['country']);
+                      return favoritesController.favoriteCountries.contains(
+                        country['country'],
+                      );
                     }).toList();
 
                     return ListView.builder(
@@ -205,22 +220,25 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget _buildFavoriteCard(Map<String, dynamic> country, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final countryName = country['country'] ?? 'Unknown';
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: GestureDetector(
         onTap: () {
-          Get.to(() => DetailScreen(
+          final countryDetail = CountryDetail(
             name: countryName,
-            image: country['countryInfo']?['flag'] ?? '',
+            flagUrl: country['countryInfo']?['flag'] ?? '',
             totalCases: country['cases'] ?? 0,
             totalRecovered: country['recovered'] ?? 0,
             totalDeaths: country['deaths'] ?? 0,
-            test: country['tests'] ?? 0,
             active: country['active'] ?? 0,
+            test: country['tests'] ?? 0,
             critical: country['critical'] ?? 0,
             todayRecovered: country['todayRecovered'] ?? 0,
-          ));
+            tests: null,
+          );
+
+          Get.to(() => DetailScreen(countryDetail: countryDetail));
         },
         child: Container(
           padding: const EdgeInsets.all(20),
@@ -229,7 +247,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: isDark 
+                color: isDark
                     ? Colors.black.withOpacity(0.3)
                     : Colors.black.withOpacity(0.1),
                 blurRadius: 15,
@@ -280,7 +298,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Country Info
                   Expanded(
                     child: Column(
@@ -291,18 +309,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : const Color(0xff0f172a),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xff0f172a),
                             height: 1.2,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: _getRiskColor(country['cases'] ?? 0).withOpacity(0.1),
+                            color: _getRiskColor(
+                              country['cases'] ?? 0,
+                            ).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: _getRiskColor(country['cases'] ?? 0).withOpacity(0.3),
+                              color: _getRiskColor(
+                                country['cases'] ?? 0,
+                              ).withOpacity(0.3),
                               width: 1,
                             ),
                           ),
@@ -319,7 +346,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       ],
                     ),
                   ),
-                  
+
                   // Remove from favorites button
                   GestureDetector(
                     onTap: () {
@@ -341,9 +368,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Stats Row
               Row(
                 children: [
@@ -389,16 +416,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Widget _buildCompactStatChip(String label, int value, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
       ),
       child: Column(
         children: [

@@ -1,6 +1,7 @@
 import 'package:covid19_tracker_flutter/Controllers/favorites_controller.dart';
-import 'package:covid19_tracker_flutter/Services/states_services.dart';
-import 'package:covid19_tracker_flutter/Views/screens/detail_screen.dart';
+import 'package:covid19_tracker_flutter/Models/CountryDetailModel.dart';
+import 'package:covid19_tracker_flutter/Services/states_service.dart';
+import 'package:covid19_tracker_flutter/Views/screens/detail_screen/detail_screen.dart';
 import 'package:covid19_tracker_flutter/Views/widgets/glassmorphism_card.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -19,7 +20,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
   final favoritesController = Get.find<FavoritesController>();
   late AnimationController _animationController;
   String selectedFilter = 'All';
-  
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +43,9 @@ class _CountriesListScreenState extends State<CountriesListScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xff0f172a) : const Color(0xfff8fafc),
+      backgroundColor: isDark
+          ? const Color(0xff0f172a)
+          : const Color(0xfff8fafc),
       body: SafeArea(
         child: Column(
           children: [
@@ -61,7 +64,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: isDark 
+                            color: isDark
                                 ? Colors.black.withOpacity(0.3)
                                 : Colors.black.withOpacity(0.1),
                             blurRadius: 10,
@@ -102,7 +105,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: isDark 
+                      color: isDark
                           ? Colors.black.withOpacity(0.3)
                           : Colors.black.withOpacity(0.1),
                       blurRadius: 10,
@@ -121,10 +124,15 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     hintText: 'Search countries...',
                     hintStyle: TextStyle(
-                      color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                      color: isDark
+                          ? const Color(0xff64748b)
+                          : const Color(0xff64748b),
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -133,7 +141,9 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                       padding: const EdgeInsets.only(left: 20, right: 16),
                       child: Icon(
                         Icons.search_rounded,
-                        color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                        color: isDark
+                            ? const Color(0xff64748b)
+                            : const Color(0xff64748b),
                         size: 20,
                       ),
                     ),
@@ -147,7 +157,9 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                               padding: const EdgeInsets.only(right: 20),
                               child: Icon(
                                 Icons.clear_rounded,
-                                color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                                color: isDark
+                                    ? const Color(0xff64748b)
+                                    : const Color(0xff64748b),
                                 size: 20,
                               ),
                             ),
@@ -191,8 +203,10 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                       },
                     );
                   } else {
-                    List<dynamic> filteredData = _filterCountries(snapshot.data!);
-                    
+                    List<dynamic> filteredData = _filterCountries(
+                      snapshot.data!,
+                    );
+
                     if (filteredData.isEmpty) {
                       return Center(
                         child: Column(
@@ -217,7 +231,9 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : const Color(0xff0f172a),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xff0f172a),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -239,17 +255,20 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                       itemBuilder: (context, index) {
                         final country = filteredData[index];
                         return SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(1, 0),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                            parent: _animationController,
-                            curve: Interval(
-                              (index * 0.05).clamp(0.0, 1.0),
-                              1.0,
-                              curve: Curves.easeOut,
-                            ),
-                          )),
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(1, 0),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _animationController,
+                                  curve: Interval(
+                                    (index * 0.05).clamp(0.0, 1.0),
+                                    1.0,
+                                    curve: Curves.easeOut,
+                                  ),
+                                ),
+                              ),
                           child: _buildCountryCard(country),
                         );
                       },
@@ -267,7 +286,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
   Widget _buildFilterChip(String filter) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedFilter == filter;
-    
+
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -280,38 +299,42 @@ class _CountriesListScreenState extends State<CountriesListScreen>
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected 
+            color: isSelected
                 ? const Color(0xff6366f1)
                 : (isDark ? const Color(0xff1e293b) : Colors.white),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected 
+              color: isSelected
                   ? const Color(0xff6366f1)
                   : const Color(0xff64748b).withOpacity(0.2),
               width: 1,
             ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: const Color(0xff6366f1).withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ] : [
-              BoxShadow(
-                color: isDark 
-                    ? Colors.black.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.05),
-                blurRadius: 5,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xff6366f1).withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.black.withOpacity(0.2)
+                          : Colors.black.withOpacity(0.05),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Text(
             filter,
             style: TextStyle(
               color: isSelected
                   ? Colors.white
-                  : (isDark ? const Color(0xff94a3b8) : const Color(0xff64748b)),
+                  : (isDark
+                        ? const Color(0xff94a3b8)
+                        : const Color(0xff64748b)),
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               fontSize: 14,
             ),
@@ -323,7 +346,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
 
   Widget _buildShimmerCard() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Shimmer.fromColors(
@@ -380,22 +403,24 @@ class _CountriesListScreenState extends State<CountriesListScreen>
   Widget _buildCountryCard(Map<String, dynamic> country) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final countryName = country['country'] ?? 'Unknown';
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
         onTap: () {
-          Get.to(() => DetailScreen(
+          final countryDetail = CountryDetail(
             name: countryName,
-            image: country['countryInfo']?['flag'] ?? '',
+            flagUrl: country['countryInfo']?['flag'] ?? '',
             totalCases: country['cases'] ?? 0,
             totalRecovered: country['recovered'] ?? 0,
             totalDeaths: country['deaths'] ?? 0,
-            test: country['tests'] ?? 0,
             active: country['active'] ?? 0,
+            test: country['tests'] ?? 0,
             critical: country['critical'] ?? 0,
-            todayRecovered: country['todayRecovered'] ?? 0,
-          ));
+            todayRecovered: country['todayRecovered'] ?? 0, tests: null,
+          );
+
+          Get.to(() => DetailScreen(countryDetail: countryDetail));
         },
         child: Container(
           padding: const EdgeInsets.all(20),
@@ -404,7 +429,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: isDark 
+                color: isDark
                     ? Colors.black.withOpacity(0.3)
                     : Colors.black.withOpacity(0.1),
                 blurRadius: 10,
@@ -452,7 +477,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // Country Info
               Expanded(
                 child: Column(
@@ -479,7 +504,7 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                   ],
                 ),
               ),
-              
+
               // Risk Badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -497,34 +522,36 @@ class _CountriesListScreenState extends State<CountriesListScreen>
                   ),
                 ),
               ),
-              
+
               const SizedBox(width: 12),
-              
+
               // Favorite Button
-              Obx(() => GestureDetector(
-                onTap: () {
-                  favoritesController.toggleFavorite(countryName);
-                },
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: favoritesController.isFavorite(countryName)
-                        ? const Color(0xffef4444).withOpacity(0.1)
-                        : const Color(0xff64748b).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    favoritesController.isFavorite(countryName)
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    color: favoritesController.isFavorite(countryName)
-                        ? const Color(0xffef4444)
-                        : const Color(0xff64748b),
-                    size: 18,
+              Obx(
+                () => GestureDetector(
+                  onTap: () {
+                    favoritesController.toggleFavorite(countryName);
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: favoritesController.isFavorite(countryName)
+                          ? const Color(0xffef4444).withOpacity(0.1)
+                          : const Color(0xff64748b).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      favoritesController.isFavorite(countryName)
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: favoritesController.isFavorite(countryName)
+                          ? const Color(0xffef4444)
+                          : const Color(0xff64748b),
+                      size: 18,
+                    ),
                   ),
                 ),
-              )),
+              ),
             ],
           ),
         ),
