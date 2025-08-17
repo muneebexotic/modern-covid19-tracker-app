@@ -17,7 +17,7 @@ class MapController extends GetxController {
   final RxBool loading = false.obs;
   final RxString error = ''.obs;
   final Rxn<MapDataModel> selectedCountry = Rxn<MapDataModel>();
-  
+
   // Map settings
   final Rx<LatLng> currentCenter = const LatLng(20.0, 0.0).obs;
   final RxDouble currentZoom = 2.0.obs;
@@ -25,7 +25,7 @@ class MapController extends GetxController {
   final RxBool showHeatmap = false.obs;
   final RxBool showClusters = true.obs;
   final RxString selectedMetric = 'cases'.obs;
-  
+
   // Filters
   final RxString searchQuery = ''.obs;
   final RxString selectedRiskLevel = 'ALL'.obs;
@@ -41,7 +41,14 @@ class MapController extends GetxController {
   // Available options
   final List<String> mapTypes = ['standard', 'satellite', 'terrain'];
   final List<String> metrics = ['cases', 'deaths', 'recovered', 'active'];
-  final List<String> riskLevels = ['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'MINIMAL'];
+  final List<String> riskLevels = [
+    'ALL',
+    'CRITICAL',
+    'HIGH',
+    'MEDIUM',
+    'LOW',
+    'MINIMAL',
+  ];
 
   @override
   void onInit() {
@@ -52,8 +59,11 @@ class MapController extends GetxController {
 
   /// Setup search listener with debouncing
   void _setupSearchListener() {
-    debounce(searchQuery, (_) => _filterCountries(),
-        time: const Duration(milliseconds: 500));
+    debounce(
+      searchQuery,
+      (_) => _filterCountries(),
+      time: const Duration(milliseconds: 500),
+    );
   }
 
   /// Load all map data
@@ -65,7 +75,7 @@ class MapController extends GetxController {
       print('🗺️ MapController: Loading map data...');
 
       final countries = await _mapService.getAllCountriesMapData();
-      
+
       allCountries.value = countries;
       _filterCountries();
 
@@ -75,7 +85,6 @@ class MapController extends GetxController {
       }
 
       print('✅ MapController: Loaded ${countries.length} countries');
-
     } catch (e, stackTrace) {
       error.value = 'Failed to load map data';
       print('❌ MapController.loadMapData error: $e');
@@ -94,7 +103,7 @@ class MapController extends GetxController {
       final query = searchQuery.value.toLowerCase();
       filtered = filtered.where((country) {
         return country.country.toLowerCase().contains(query) ||
-               country.countryCode.toLowerCase().contains(query);
+            country.countryCode.toLowerCase().contains(query);
       }).toList();
     }
 
@@ -108,7 +117,7 @@ class MapController extends GetxController {
     // Apply cases range filter
     filtered = filtered.where((country) {
       return country.totalCases >= minCases.value &&
-             country.totalCases <= maxCases.value;
+          country.totalCases <= maxCases.value;
     }).toList();
 
     filteredCountries.value = filtered;
@@ -123,11 +132,11 @@ class MapController extends GetxController {
   /// Select a country on the map
   void selectCountry(MapDataModel country) {
     selectedCountry.value = country;
-    
+
     // Center map on selected country
     final center = LatLng(country.latitude, country.longitude);
     currentCenter.value = center;
-    
+
     // Zoom in if not already zoomed
     if (currentZoom.value < 5) {
       currentZoom.value = 5.0;
@@ -252,10 +261,7 @@ class MapController extends GetxController {
     );
 
     // Center on bounds
-    final center = LatLng(
-      (minLat + maxLat) / 2,
-      (minLng + maxLng) / 2,
-    );
+    final center = LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
 
     currentCenter.value = center;
     currentZoom.value = _calculateZoomLevel(bounds);
@@ -285,7 +291,7 @@ class MapController extends GetxController {
   /// Get top countries by selected metric
   List<MapDataModel> getTopCountries({int limit = 10}) {
     final sorted = List<MapDataModel>.from(filteredCountries);
-    
+
     switch (selectedMetric.value) {
       case 'deaths':
         sorted.sort((a, b) => b.totalDeaths.compareTo(a.totalDeaths));
@@ -300,7 +306,7 @@ class MapController extends GetxController {
         sorted.sort((a, b) => b.totalCases.compareTo(a.totalCases));
         break;
     }
-    
+
     return sorted.take(limit).toList();
   }
 
@@ -322,10 +328,22 @@ class MapController extends GetxController {
   Map<String, dynamic> getStatsSummary() {
     if (filteredCountries.isEmpty) return {};
 
-    final totalCases = filteredCountries.fold<num>(0, (sum, c) => sum + c.totalCases);
-    final totalDeaths = filteredCountries.fold<num>(0, (sum, c) => sum + c.totalDeaths);
-    final totalRecovered = filteredCountries.fold<num>(0, (sum, c) => sum + c.recovered);
-    final totalActive = filteredCountries.fold<num>(0, (sum, c) => sum + c.active);
+    final totalCases = filteredCountries.fold<num>(
+      0,
+      (sum, c) => sum + c.totalCases,
+    );
+    final totalDeaths = filteredCountries.fold<num>(
+      0,
+      (sum, c) => sum + c.totalDeaths,
+    );
+    final totalRecovered = filteredCountries.fold<num>(
+      0,
+      (sum, c) => sum + c.recovered,
+    );
+    final totalActive = filteredCountries.fold<num>(
+      0,
+      (sum, c) => sum + c.active,
+    );
 
     return {
       'totalCountries': filteredCountries.length,
@@ -339,7 +357,7 @@ class MapController extends GetxController {
         'medium': getCountriesByRisk('MEDIUM').length,
         'low': getCountriesByRisk('LOW').length,
         'minimal': getCountriesByRisk('MINIMAL').length,
-      }
+      },
     };
   }
 
@@ -350,8 +368,9 @@ class MapController extends GetxController {
         return 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}';
       case 'terrain':
         return 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}';
-      default: // standard
-        return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      default: // standard (OpenStreetMap)
+        // Use the new, recommended URL without subdomains
+        return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     }
   }
 
@@ -360,9 +379,11 @@ class MapController extends GetxController {
     switch (currentMapType.value) {
       case 'satellite':
       case 'terrain':
+        // The old Google Maps URLs still use subdomains.
         return ['mt0', 'mt1', 'mt2', 'mt3'];
       default:
-        return ['a', 'b', 'c'];
+        // OpenStreetMap no longer requires subdomains.
+        return [];
     }
   }
 }
