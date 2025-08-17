@@ -1,9 +1,12 @@
+import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/cluster_marker.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:flutter_map/flutter_map.dart' as flutter_map; // <-- Add 'as flutter_map'
+import 'package:flutter_map/flutter_map.dart' as flutter_map;
 import 'package:latlong2/latlong.dart';
-import 'package:covid19_tracker_flutter/Controllers/map_controller.dart' as app_map; // <-- Add 'as app_map'
+import 'package:covid19_tracker_flutter/Controllers/map_controller.dart'
+    as app_map;
 import 'package:covid19_tracker_flutter/Controllers/geolocation_controller.dart';
 import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/country_popup.dart';
 import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/heat_overlay.dart';
@@ -21,26 +24,30 @@ class InteractiveMapScreen extends StatefulWidget {
 
 class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     with TickerProviderStateMixin {
-  
-  late final app_map.MapController mapController; // <-- Use 'app_map.MapController'
+  late final app_map.MapController
+  mapController; // <-- Use 'app_map.MapController'
   late final GeolocationController geoController;
-  late final flutter_map.MapController flutterMapController; // <-- Use 'flutter_map.MapController'
-  
+  late final flutter_map.MapController
+  flutterMapController; // <-- Use 'flutter_map.MapController'
+
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
-  
+
   final TextEditingController _searchController = TextEditingController();
   bool _showSearchResults = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize controllers
-    mapController = Get.put(app_map.MapController()); // <-- Use 'app_map.MapController()'
+    mapController = Get.put(
+      app_map.MapController(),
+    ); // <-- Use 'app_map.MapController()'
     geoController = Get.put(GeolocationController());
-    flutterMapController = flutter_map.MapController(); // <-- This line was already correct but now works with the import fix
-    
+    flutterMapController =
+        flutter_map.MapController(); // <-- This line was already correct but now works with the import fix
+
     // Setup animations
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -49,9 +56,9 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
-    
+
     _fadeController.forward();
-    
+
     // Setup search controller
     _searchController.addListener(() {
       mapController.updateSearchQuery(_searchController.text);
@@ -73,147 +80,209 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkScaffold : AppColors.lightScaffold,
-      body: Obx(() => Stack(
-        children: [
-          // Main Map
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: _buildMapView(isDark),
-          ),
+      backgroundColor: isDark
+          ? AppColors.darkScaffold
+          : AppColors.lightScaffold,
+      body: Obx(
+        () => Stack(
+          children: [
+            // Main Map
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: _buildMapView(isDark),
+            ),
 
-          // Loading Overlay
-          if (mapController.loading.value)
-            Container(
-              color: Colors.black54,
-              child: const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Loading map data...',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+            // Loading Overlay
+            if (mapController.loading.value)
+              Container(
+                color: Colors.black54,
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primary,
+                        ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 16),
+                      Text(
+                        'Loading map data...',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-          // Top Controls
-          if (mapController.showControls.value) ...[
-            _buildTopControls(isDark),
-            
-            // Search Results Overlay
-            if (_showSearchResults)
-              _buildSearchResults(isDark),
+            // Top Controls
+            if (mapController.showControls.value) ...[
+              _buildTopControls(isDark),
+
+              // Search Results Overlay
+              if (_showSearchResults) _buildSearchResults(isDark),
+            ],
+
+            // Map Controls (Zoom, etc.)
+            if (mapController.showControls.value)
+              Positioned(
+                right: 16,
+                top: MediaQuery.of(context).padding.top + 120,
+                child: MapControls(
+                  mapController: mapController,
+                  geoController: geoController,
+                  flutterMapController: flutterMapController,
+                ),
+              ),
+
+            // Legend
+            if (mapController.showLegend.value)
+              Positioned(
+                left: 16,
+                bottom: MediaQuery.of(context).padding.bottom + 80,
+                child: LegendWidget(mapController: mapController),
+              ),
+
+            // Country Popup
+            if (mapController.selectedCountry.value != null)
+              Positioned.fill(
+                child: CountryPopup(
+                  country: mapController.selectedCountry.value!,
+                  onClose: () => mapController.clearSelection(),
+                ),
+              ),
+
+            // Bottom Stats Bar
+            if (!mapController.isFullscreen.value) _buildBottomStatsBar(isDark),
+
+            // Error Snackbar
+            if (mapController.error.value.isNotEmpty)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 60,
+                left: 16,
+                right: 16,
+                child: _buildErrorCard(isDark),
+              ),
           ],
-
-          // Map Controls (Zoom, etc.)
-          if (mapController.showControls.value)
-            Positioned(
-              right: 16,
-              top: MediaQuery.of(context).padding.top + 120,
-              child: MapControls(
-                mapController: mapController,
-                geoController: geoController,
-                flutterMapController: flutterMapController,
-              ),
-            ),
-
-          // Legend
-          if (mapController.showLegend.value)
-            Positioned(
-              left: 16,
-              bottom: MediaQuery.of(context).padding.bottom + 80,
-              child: LegendWidget(mapController: mapController),
-            ),
-
-          // Country Popup
-          if (mapController.selectedCountry.value != null)
-            Positioned.fill(
-              child: CountryPopup(
-                country: mapController.selectedCountry.value!,
-                onClose: () => mapController.clearSelection(),
-              ),
-            ),
-
-          // Bottom Stats Bar
-          if (!mapController.isFullscreen.value)
-            _buildBottomStatsBar(isDark),
-
-          // Error Snackbar
-          if (mapController.error.value.isNotEmpty)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 60,
-              left: 16,
-              right: 16,
-              child: _buildErrorCard(isDark),
-            ),
-        ],
-      )),
+        ),
+      ),
     );
   }
 
   Widget _buildMapView(bool isDark) {
-    return Obx(() => flutter_map.FlutterMap( // <-- Use 'flutter_map.FlutterMap'
-      mapController: flutterMapController,
-      options: flutter_map.MapOptions( // <-- Use 'flutter_map.MapOptions'
-        initialCenter: mapController.currentCenter.value,
-        initialZoom: mapController.currentZoom.value,
-        minZoom: 1.0,
-        maxZoom: 18.0,
-        interactionOptions: const flutter_map.InteractionOptions( // <-- Use 'flutter_map.InteractionOptions'
-          flags: flutter_map.InteractiveFlag.all, // <-- Use 'flutter_map.InteractiveFlag'
+    return Obx(
+      () => flutter_map.FlutterMap(
+        // <-- Use 'flutter_map.FlutterMap'
+        mapController: flutterMapController,
+        options: flutter_map.MapOptions(
+          // <-- Use 'flutter_map.MapOptions'
+          initialCenter: mapController.currentCenter.value,
+          initialZoom: mapController.currentZoom.value,
+          minZoom: 1.0,
+          maxZoom: 18.0,
+          interactionOptions: const flutter_map.InteractionOptions(
+            // <-- Use 'flutter_map.InteractionOptions'
+            flags: flutter_map
+                .InteractiveFlag
+                .all, // <-- Use 'flutter_map.InteractiveFlag'
+          ),
+          onMapEvent: (flutter_map.MapEvent mapEvent) {
+            // <-- Use 'flutter_map.MapEvent'
+            if (mapEvent is flutter_map.MapEventMoveEnd) {
+              // <-- Use 'flutter_map.MapEventMoveEnd'
+              mapController.setMapCenter(mapEvent.camera.center);
+              mapController.zoomTo(mapEvent.camera.zoom);
+            }
+          },
+          onTap: (tapPosition, point) {
+            // Clear selection when tapping empty space
+            if (mapController.selectedCountry.value != null) {
+              mapController.clearSelection();
+            }
+            // Hide search results
+            setState(() {
+              _showSearchResults = false;
+            });
+            // Unfocus search field
+            FocusScope.of(context).unfocus();
+          },
         ),
-        onMapEvent: (flutter_map.MapEvent mapEvent) { // <-- Use 'flutter_map.MapEvent'
-          if (mapEvent is flutter_map.MapEventMoveEnd) { // <-- Use 'flutter_map.MapEventMoveEnd'
-            mapController.setMapCenter(mapEvent.camera.center);
-            mapController.zoomTo(mapEvent.camera.zoom);
-          }
-        },
-        onTap: (tapPosition, point) {
-          // Clear selection when tapping empty space
-          if (mapController.selectedCountry.value != null) {
-            mapController.clearSelection();
-          }
-          // Hide search results
-          setState(() {
-            _showSearchResults = false;
-          });
-          // Unfocus search field
-          FocusScope.of(context).unfocus();
-        },
-      ),
-      children: [
-        // Base Tile Layer
-        flutter_map.TileLayer( // <-- Use 'flutter_map.TileLayer'
-          urlTemplate: mapController.getMapTileUrl(),
-          subdomains: mapController.getMapSubdomains(),
-          userAgentPackageName: 'com.example.covid19_tracker_flutter',
-          maxNativeZoom: 19,
-        ),
-
-        // Heatmap Overlay
-        if (mapController.showHeatmap.value)
-          HeatOverlay(
-            countries: mapController.filteredCountries,
-            selectedMetric: mapController.selectedMetric.value,
+        children: [
+          // Base Tile Layer
+          flutter_map.TileLayer(
+            // <-- Use 'flutter_map.TileLayer'
+            urlTemplate: mapController.getMapTileUrl(),
+            subdomains: mapController.getMapSubdomains(),
+            userAgentPackageName: 'com.example.covid19_tracker_flutter',
+            maxNativeZoom: 19,
           ),
 
-        // Country Markers
-        flutter_map.MarkerLayer( // <-- Use 'flutter_map.MarkerLayer'
-          markers: _buildCountryMarkers(),
-        ),
-      ],
-    ));
+          // Heatmap Overlay
+          if (mapController.showHeatmap.value)
+            HeatOverlay(
+              countries: mapController.filteredCountries,
+              selectedMetric: mapController.selectedMetric.value,
+            ),
+
+          MarkerClusterLayerWidget(
+            options: MarkerClusterLayerOptions(
+              maxClusterRadius: 120,
+              size: const Size(40, 40),
+              // --- FIX: Remove the 'anchor' and 'fitBoundsOptions' parameters ---
+              markers: mapController.filteredCountries.map((country) {
+                return flutter_map.Marker(
+                  point: LatLng(country.latitude, country.longitude),
+                  width: 40,
+                  height: 40,
+                  // Use 'alignment' property instead of 'anchor'
+                  alignment: Alignment.bottomCenter,
+                  child: ClusterMarker(
+                    countries: [country],
+                    selectedMetric: mapController.selectedMetric.value,
+                    zoom: flutterMapController.camera.zoom,
+                    onTap: () {
+                      mapController.selectCountry(country);
+                      HapticFeedback.lightImpact();
+                    },
+                  ),
+                );
+              }).toList(),
+              builder: (context, markers) {
+                final countriesInCluster = markers.map((marker) {
+                  return mapController.allCountries.firstWhere(
+                    (c) =>
+                        c.latitude == marker.point.latitude &&
+                        c.longitude == marker.point.longitude,
+                  );
+                }).toList();
+
+                return ClusterMarker(
+                  countries: countriesInCluster,
+                  selectedMetric: mapController.selectedMetric.value,
+                  zoom: flutterMapController.camera.zoom,
+                  onTap: () {
+                    // Use flutterMapController.fitCamera with a bounds-based fit.
+                    // The fitBoundsOptions parameter has been removed.
+                    flutterMapController.fitCamera(
+                      flutter_map.CameraFit.bounds(
+                        bounds: flutter_map.LatLngBounds.fromPoints(
+                          markers.map((m) => m.point).toList(),
+                        ),
+                        padding: const EdgeInsets.all(50),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTopControls(bool isDark) {
@@ -244,9 +313,9 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                     color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Title
                 Expanded(
                   child: Column(
@@ -256,28 +325,30 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                         'Global COVID Map',
                         style: AppTextStyles.heading(context, size: 20),
                       ),
-                      Obx(() => Text(
-                        '${mapController.filteredCountries.length} countries',
-                        style: AppTextStyles.smallMuted.copyWith(
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      Obx(
+                        () => Text(
+                          '${mapController.filteredCountries.length} countries',
+                          style: AppTextStyles.smallMuted.copyWith(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
                         ),
-                      )),
+                      ),
                     ],
                   ),
                 ),
-                
+
                 // Settings Menu
                 _buildSettingsMenu(isDark),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Search Bar
             _buildSearchBar(isDark),
-            
+
             const SizedBox(height: 12),
-            
+
             // Filter Chips
             _buildFilterChips(isDark),
           ],
@@ -342,40 +413,42 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
   Widget _buildFilterChips(bool isDark) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Obx(() => Row(
-        children: [
-          // Risk Level Filter
-          _buildFilterChip(
-            'Risk Level',
-            mapController.selectedRiskLevel.value,
-            mapController.riskLevels,
-            (value) => mapController.setRiskLevelFilter(value),
-            isDark,
-          ),
-          
-          const SizedBox(width: 8),
-          
-          // Metric Filter
-          _buildFilterChip(
-            'Metric',
-            mapController.selectedMetric.value.capitalize!,
-            mapController.metrics.map((m) => m.capitalize!).toList(),
-            (value) => mapController.changeMetric(value.toLowerCase()),
-            isDark,
-          ),
-          
-          const SizedBox(width: 8),
-          
-          // Map Type Filter
-          _buildFilterChip(
-            'Map Type',
-            mapController.currentMapType.value.capitalize!,
-            mapController.mapTypes.map((m) => m.capitalize!).toList(),
-            (value) => mapController.changeMapType(value.toLowerCase()),
-            isDark,
-          ),
-        ],
-      )),
+      child: Obx(
+        () => Row(
+          children: [
+            // Risk Level Filter
+            _buildFilterChip(
+              'Risk Level',
+              mapController.selectedRiskLevel.value,
+              mapController.riskLevels,
+              (value) => mapController.setRiskLevelFilter(value),
+              isDark,
+            ),
+
+            const SizedBox(width: 8),
+
+            // Metric Filter
+            _buildFilterChip(
+              'Metric',
+              mapController.selectedMetric.value.capitalize!,
+              mapController.metrics.map((m) => m.capitalize!).toList(),
+              (value) => mapController.changeMetric(value.toLowerCase()),
+              isDark,
+            ),
+
+            const SizedBox(width: 8),
+
+            // Map Type Filter
+            _buildFilterChip(
+              'Map Type',
+              mapController.currentMapType.value.capitalize!,
+              mapController.mapTypes.map((m) => m.capitalize!).toList(),
+              (value) => mapController.changeMapType(value.toLowerCase()),
+              isDark,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -452,7 +525,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         ),
         child: Obx(() {
           final results = mapController.filteredCountries.take(5).toList();
-          
+
           if (results.isEmpty) {
             return Padding(
               padding: const EdgeInsets.all(16),
@@ -464,7 +537,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
               ),
             );
           }
-          
+
           return ListView.builder(
             shrinkWrap: true,
             itemCount: results.length,
@@ -475,7 +548,9 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Color(int.parse('0xFF${country.riskColor.substring(1)}')),
+                    color: Color(
+                      int.parse('0xFF${country.riskColor.substring(1)}'),
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -526,9 +601,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         color: isDark ? Colors.white : Colors.black,
       ),
       color: isDark ? AppColors.darkCard : AppColors.lightCard,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onSelected: (value) {
         switch (value) {
           case 'refresh':
@@ -553,9 +626,15 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           value: 'refresh',
           child: Row(
             children: [
-              Icon(Icons.refresh_rounded, color: isDark ? Colors.white : Colors.black),
+              Icon(
+                Icons.refresh_rounded,
+                color: isDark ? Colors.white : Colors.black,
+              ),
               const SizedBox(width: 8),
-              Text('Refresh Data', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+              Text(
+                'Refresh Data',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              ),
             ],
           ),
         ),
@@ -563,9 +642,15 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           value: 'location',
           child: Row(
             children: [
-              Icon(Icons.my_location_rounded, color: isDark ? Colors.white : Colors.black),
+              Icon(
+                Icons.my_location_rounded,
+                color: isDark ? Colors.white : Colors.black,
+              ),
               const SizedBox(width: 8),
-              Text('My Location', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+              Text(
+                'My Location',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              ),
             ],
           ),
         ),
@@ -573,11 +658,19 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           value: 'fullscreen',
           child: Row(
             children: [
-              Icon(mapController.isFullscreen.value ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded, 
-                   color: isDark ? Colors.white : Colors.black),
+              Icon(
+                mapController.isFullscreen.value
+                    ? Icons.fullscreen_exit_rounded
+                    : Icons.fullscreen_rounded,
+                color: isDark ? Colors.white : Colors.black,
+              ),
               const SizedBox(width: 8),
-              Text(mapController.isFullscreen.value ? 'Exit Fullscreen' : 'Fullscreen', 
-                   style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+              Text(
+                mapController.isFullscreen.value
+                    ? 'Exit Fullscreen'
+                    : 'Fullscreen',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              ),
             ],
           ),
         ),
@@ -585,10 +678,17 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           value: 'legend',
           child: Row(
             children: [
-              Icon(mapController.showLegend.value ? Icons.legend_toggle_rounded : Icons.legend_toggle_rounded, 
-                   color: isDark ? Colors.white : Colors.black),
+              Icon(
+                mapController.showLegend.value
+                    ? Icons.legend_toggle_rounded
+                    : Icons.legend_toggle_rounded,
+                color: isDark ? Colors.white : Colors.black,
+              ),
               const SizedBox(width: 8),
-              Text('Toggle Legend', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+              Text(
+                'Toggle Legend',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              ),
             ],
           ),
         ),
@@ -596,10 +696,17 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           value: 'heatmap',
           child: Row(
             children: [
-              Icon(mapController.showHeatmap.value ? Icons.heat_pump_rounded : Icons.heat_pump_outlined, 
-                   color: isDark ? Colors.white : Colors.black),
+              Icon(
+                mapController.showHeatmap.value
+                    ? Icons.heat_pump_rounded
+                    : Icons.heat_pump_outlined,
+                color: isDark ? Colors.white : Colors.black,
+              ),
               const SizedBox(width: 8),
-              Text('Toggle Heatmap', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+              Text(
+                'Toggle Heatmap',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              ),
             ],
           ),
         ),
@@ -620,12 +727,10 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           bottom: MediaQuery.of(context).padding.bottom + 12,
         ),
         decoration: BoxDecoration(
-          color: (isDark ? AppColors.darkCard : AppColors.lightCard).withOpacity(0.95),
+          color: (isDark ? AppColors.darkCard : AppColors.lightCard)
+              .withOpacity(0.95),
           border: Border(
-            top: BorderSide(
-              color: Colors.grey.withOpacity(0.2),
-              width: 1,
-            ),
+            top: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
           ),
         ),
         child: Obx(() {
@@ -635,10 +740,30 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatItem('Countries', '${stats['totalCountries']}', AppColors.primary, isDark),
-              _buildStatItem('Cases', _formatNumber(stats['totalCases']), AppColors.danger, isDark),
-              _buildStatItem('Deaths', _formatNumber(stats['totalDeaths']), AppColors.warning, isDark),
-              _buildStatItem('Recovered', _formatNumber(stats['totalRecovered']), AppColors.accent, isDark),
+              _buildStatItem(
+                'Countries',
+                '${stats['totalCountries']}',
+                AppColors.primary,
+                isDark,
+              ),
+              _buildStatItem(
+                'Cases',
+                _formatNumber(stats['totalCases']),
+                AppColors.danger,
+                isDark,
+              ),
+              _buildStatItem(
+                'Deaths',
+                _formatNumber(stats['totalDeaths']),
+                AppColors.warning,
+                isDark,
+              ),
+              _buildStatItem(
+                'Recovered',
+                _formatNumber(stats['totalRecovered']),
+                AppColors.accent,
+                isDark,
+              ),
             ],
           );
         }),
@@ -715,52 +840,6 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         ],
       ),
     );
-  }
-
-  List<flutter_map.Marker> _buildCountryMarkers() { // <-- Use 'flutter_map.Marker'
-    return mapController.filteredCountries.map((country) {
-      final isSelected = mapController.selectedCountry.value == country;
-      final markerSize = isSelected ? country.markerSize * 1.5 : country.markerSize;
-      
-      return flutter_map.Marker( // <-- Use 'flutter_map.Marker'
-        width: markerSize,
-        height: markerSize,
-        point: LatLng(country.latitude, country.longitude),
-        child: GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            mapController.selectCountry(country);
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: Color(int.parse('0xFF${country.riskColor.substring(1)}')),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white,
-                width: isSelected ? 3 : 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: isSelected ? 8 : 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                country.countryCode,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: markerSize * 0.25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }).toList();
   }
 
   String _formatNumber(num number) {
