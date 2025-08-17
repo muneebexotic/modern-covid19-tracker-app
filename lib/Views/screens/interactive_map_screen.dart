@@ -1,3 +1,4 @@
+import 'package:covid19_tracker_flutter/Models/MapDataModel.dart';
 import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/cluster_marker.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +10,12 @@ import 'package:covid19_tracker_flutter/Controllers/map_controller.dart'
     as app_map;
 import 'package:covid19_tracker_flutter/Controllers/geolocation_controller.dart';
 import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/country_popup.dart';
-import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/heat_overlay.dart';
 import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/map_controls.dart';
 import 'package:covid19_tracker_flutter/Views/screens/interactive_map/widgets/legend_widget.dart';
 import 'package:covid19_tracker_flutter/Utils/colors.dart';
 import 'package:covid19_tracker_flutter/Utils/text_styles.dart';
+import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
+import 'dart:async';
 
 class InteractiveMapScreen extends StatefulWidget {
   const InteractiveMapScreen({super.key});
@@ -25,16 +27,19 @@ class InteractiveMapScreen extends StatefulWidget {
 class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     with TickerProviderStateMixin {
   late final app_map.MapController
-  mapController; // <-- Use 'app_map.MapController'
+      mapController; // <-- Use 'app_map.MapController'
   late final GeolocationController geoController;
   late final flutter_map.MapController
-  flutterMapController; // <-- Use 'flutter_map.MapController'
+      flutterMapController; // <-- Use 'flutter_map.MapController'
 
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
 
   final TextEditingController _searchController = TextEditingController();
   bool _showSearchResults = false;
+
+  // Add StreamController for heatmap rebuilding
+  late final StreamController<void> _rebuildStream;
 
   @override
   void initState() {
@@ -47,6 +52,9 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     geoController = Get.put(GeolocationController());
     flutterMapController =
         flutter_map.MapController(); // <-- This line was already correct but now works with the import fix
+
+    // Initialize rebuild stream for heatmap
+    _rebuildStream = StreamController<void>.broadcast();
 
     // Setup animations
     _fadeController = AnimationController(
@@ -72,6 +80,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
   void dispose() {
     _fadeController.dispose();
     _searchController.dispose();
+    _rebuildStream.close(); // Don't forget to close the stream
     super.dispose();
   }
 
@@ -173,72 +182,96 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
     );
   }
 
+  // Helper function to get the value for the heatmap from your model
+  double _getValueForMetric(MapDataModel country) {
+    switch (mapController.selectedMetric.value) {
+      case 'deaths':
+        return country.totalDeaths.toDouble();
+      case 'recovered':
+        return country.recovered.toDouble();
+      case 'active':
+        return country.active.toDouble();
+      default: // cases
+        return country.totalCases.toDouble();
+    }
+  }
+
+  // Helper function to prepare heatmap data
+  List<WeightedLatLng> _prepareHeatmapData() {
+    return mapController.filteredCountries.map((country) {
+      return WeightedLatLng(
+        LatLng(country.latitude, country.longitude),
+        _getValueForMetric(country),
+      );
+    }).toList();
+  }
+
   Widget _buildMapView(bool isDark) {
     return Obx(
       () => flutter_map.FlutterMap(
-        // <-- Use 'flutter_map.FlutterMap'
         mapController: flutterMapController,
         options: flutter_map.MapOptions(
-          // <-- Use 'flutter_map.MapOptions'
           initialCenter: mapController.currentCenter.value,
           initialZoom: mapController.currentZoom.value,
           minZoom: 1.0,
           maxZoom: 18.0,
           interactionOptions: const flutter_map.InteractionOptions(
-            // <-- Use 'flutter_map.InteractionOptions'
-            flags: flutter_map
-                .InteractiveFlag
-                .all, // <-- Use 'flutter_map.InteractiveFlag'
+            flags: flutter_map.InteractiveFlag.all,
           ),
           onMapEvent: (flutter_map.MapEvent mapEvent) {
-            // <-- Use 'flutter_map.MapEvent'
             if (mapEvent is flutter_map.MapEventMoveEnd) {
-              // <-- Use 'flutter_map.MapEventMoveEnd'
               mapController.setMapCenter(mapEvent.camera.center);
               mapController.zoomTo(mapEvent.camera.zoom);
             }
           },
           onTap: (tapPosition, point) {
-            // Clear selection when tapping empty space
             if (mapController.selectedCountry.value != null) {
               mapController.clearSelection();
             }
-            // Hide search results
             setState(() {
               _showSearchResults = false;
             });
-            // Unfocus search field
             FocusScope.of(context).unfocus();
           },
         ),
         children: [
           // Base Tile Layer
           flutter_map.TileLayer(
-            // <-- Use 'flutter_map.TileLayer'
             urlTemplate: mapController.getMapTileUrl(),
             subdomains: mapController.getMapSubdomains(),
             userAgentPackageName: 'com.example.covid19_tracker_flutter',
             maxNativeZoom: 19,
           ),
 
-          // Heatmap Overlay
-          if (mapController.showHeatmap.value)
-            HeatOverlay(
-              countries: mapController.filteredCountries,
-              selectedMetric: mapController.selectedMetric.value,
+          // Heatmap Overlay (FIXED IMPLEMENTATION)
+          if (mapController.showHeatmap.value && mapController.filteredCountries.isNotEmpty)
+            HeatMapLayer(
+              heatMapDataSource: InMemoryHeatMapDataSource(
+                data: _prepareHeatmapData(),
+              ),
+              heatMapOptions: HeatMapOptions(
+                gradient: {
+                  0.0: Colors.blue,
+                  0.3: Colors.green,
+                  0.5: Colors.yellow,
+                  0.7: Colors.orange,
+                  1.0: Colors.red,
+                },
+                minOpacity: 0.1,
+                radius: 25,
+              ),
+              reset: _rebuildStream.stream,
             ),
 
           MarkerClusterLayerWidget(
             options: MarkerClusterLayerOptions(
               maxClusterRadius: 120,
               size: const Size(40, 40),
-              // --- FIX: Remove the 'anchor' and 'fitBoundsOptions' parameters ---
               markers: mapController.filteredCountries.map((country) {
                 return flutter_map.Marker(
                   point: LatLng(country.latitude, country.longitude),
                   width: 40,
                   height: 40,
-                  // Use 'alignment' property instead of 'anchor'
                   alignment: Alignment.bottomCenter,
                   child: ClusterMarker(
                     countries: [country],
@@ -265,8 +298,6 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
                   selectedMetric: mapController.selectedMetric.value,
                   zoom: flutterMapController.camera.zoom,
                   onTap: () {
-                    // Use flutterMapController.fitCamera with a bounds-based fit.
-                    // The fitBoundsOptions parameter has been removed.
                     flutterMapController.fitCamera(
                       flutter_map.CameraFit.bounds(
                         bounds: flutter_map.LatLngBounds.fromPoints(
@@ -490,6 +521,10 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
           onChanged: (String? newValue) {
             if (newValue != null) {
               onChanged(newValue);
+              // Trigger heatmap rebuild when filters change
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _rebuildStream.add(null);
+              });
             }
           },
           style: TextStyle(
@@ -618,6 +653,10 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
             break;
           case 'heatmap':
             mapController.toggleHeatmap();
+            // Trigger heatmap rebuild when toggled
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _rebuildStream.add(null);
+            });
             break;
         }
       },

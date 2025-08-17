@@ -31,6 +31,8 @@ dependencies:
   latlong2: ^0.9.1
   permission_handler: ^11.0.1
   flutter_map_marker_cluster: ^1.4.0
+  flutter_map_heatmap: ^0.0.8 
+
 
 
 dev_dependencies:
