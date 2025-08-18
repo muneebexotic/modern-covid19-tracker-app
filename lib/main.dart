@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: themeController.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
-      home: InteractiveMapScreen(),
+      home: SplashScreen(),
     ));
   }
 }

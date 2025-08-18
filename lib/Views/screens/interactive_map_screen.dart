@@ -184,26 +184,55 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
 
   // Helper function to get the value for the heatmap from your model
   double _getValueForMetric(MapDataModel country) {
-    switch (mapController.selectedMetric.value) {
+    final metric = mapController.selectedMetric.value.toLowerCase();
+    print('Getting metric value for: $metric'); // Debug print
+    
+    switch (metric) {
       case 'deaths':
         return country.totalDeaths.toDouble();
       case 'recovered':
         return country.recovered.toDouble();
       case 'active':
         return country.active.toDouble();
-      default: // cases
+      case 'cases':
+      default:
         return country.totalCases.toDouble();
     }
   }
 
   // Helper function to prepare heatmap data
   List<WeightedLatLng> _prepareHeatmapData() {
-    return mapController.filteredCountries.map((country) {
+    final countries = mapController.filteredCountries;
+    final currentMetric = mapController.selectedMetric.value;
+    
+    print('Preparing heatmap data for ${countries.length} countries with metric: $currentMetric');
+    
+    if (countries.isEmpty) return [];
+    
+    // Get all values for the current metric
+    final values = countries.map((country) => _getValueForMetric(country)).toList();
+    
+    // Find max value for normalization
+    final maxValue = values.reduce((a, b) => a > b ? a : b);
+    
+    print('Max value for $currentMetric: $maxValue');
+    
+    if (maxValue == 0) return []; // Avoid division by zero
+    
+    // Normalize weights to 0-1 range for better heatmap visualization
+    final heatmapData = countries.asMap().entries.map((entry) {
+      final country = entry.value;
+      final value = values[entry.key];
+      final normalizedWeight = value / maxValue;
+      
       return WeightedLatLng(
         LatLng(country.latitude, country.longitude),
-        _getValueForMetric(country),
+        normalizedWeight,
       );
     }).toList();
+    
+    print('Generated ${heatmapData.length} heatmap points');
+    return heatmapData;
   }
 
   Widget _buildMapView(bool isDark) {
@@ -219,9 +248,14 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
             flags: flutter_map.InteractiveFlag.all,
           ),
           onMapEvent: (flutter_map.MapEvent mapEvent) {
+            // Also trigger heatmap rebuild on zoom/pan changes
             if (mapEvent is flutter_map.MapEventMoveEnd) {
               mapController.setMapCenter(mapEvent.camera.center);
               mapController.zoomTo(mapEvent.camera.zoom);
+              // Rebuild heatmap with new radius based on zoom
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _rebuildStream.add(null);
+              });
             }
           },
           onTap: (tapPosition, point) {
@@ -243,25 +277,24 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
             maxNativeZoom: 19,
           ),
 
-          // Heatmap Overlay (FIXED IMPLEMENTATION)
-          if (mapController.showHeatmap.value && mapController.filteredCountries.isNotEmpty)
-            HeatMapLayer(
-              heatMapDataSource: InMemoryHeatMapDataSource(
-                data: _prepareHeatmapData(),
-              ),
-              heatMapOptions: HeatMapOptions(
-                gradient: {
-                  0.0: Colors.blue,
-                  0.3: Colors.green,
-                  0.5: Colors.yellow,
-                  0.7: Colors.orange,
-                  1.0: Colors.red,
-                },
-                minOpacity: 0.1,
-                radius: 25,
-              ),
-              reset: _rebuildStream.stream,
-            ),
+          // Heatmap Overlay (ENHANCED IMPLEMENTATION)
+          // Wrapped in Obx to react to metric changes
+          Obx(() => mapController.showHeatmap.value && mapController.filteredCountries.isNotEmpty
+            ? HeatMapLayer(
+                heatMapDataSource: InMemoryHeatMapDataSource(
+                  data: _prepareHeatmapData(),
+                ),
+                heatMapOptions: HeatMapOptions(
+                  gradient: _getHeatmapGradient(),
+                  minOpacity: 0.1,
+                  layerOpacity: 0.8,
+                  radius: _getHeatmapRadius(),
+                  blurFactor: 15,
+                ),
+                reset: _rebuildStream.stream,
+              )
+            : Container(), // Empty container when heatmap is off
+          ),
 
           MarkerClusterLayerWidget(
             options: MarkerClusterLayerOptions(
@@ -314,6 +347,58 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
         ],
       ),
     );
+  }
+
+  // Get appropriate gradient based on selected metric
+  Map<double, MaterialColor> _getHeatmapGradient() {
+    final metric = mapController.selectedMetric.value.toLowerCase();
+    print('Using gradient for metric: $metric'); // Debug print
+    
+    switch (metric) {
+      case 'deaths':
+        return {
+          0.0: Colors.grey,
+          0.2: Colors.orange,
+          0.5: Colors.deepOrange,
+          0.8: Colors.red,
+          1.0: Colors.pink,
+        };
+      case 'recovered':
+        return {
+          0.0: Colors.lightBlue,
+          0.3: Colors.blue,
+          0.6: Colors.indigo,
+          0.8: Colors.green,
+          1.0: Colors.teal,
+        };
+      case 'active':
+        return {
+          0.0: Colors.yellow,
+          0.3: Colors.amber,
+          0.6: Colors.orange,
+          0.8: Colors.deepOrange,
+          1.0: Colors.red,
+        };
+      case 'cases':
+      default:
+        return {
+          0.0: Colors.blue,
+          0.2: Colors.cyan,
+          0.4: Colors.green,
+          0.6: Colors.yellow,
+          0.8: Colors.orange,
+          1.0: Colors.red,
+        };
+    }
+  }
+
+  // Get appropriate radius based on zoom level
+  double _getHeatmapRadius() {
+    final zoom = flutterMapController.camera.zoom;
+    if (zoom < 3) return 40;
+    if (zoom < 6) return 30;
+    if (zoom < 10) return 25;
+    return 20;
   }
 
   Widget _buildTopControls(bool isDark) {
@@ -463,7 +548,7 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
               'Metric',
               mapController.selectedMetric.value.capitalize!,
               mapController.metrics.map((m) => m.capitalize!).toList(),
-              (value) => mapController.changeMetric(value.toLowerCase()),
+              (value) => _onMetricChanged(value),
               isDark,
             ),
 
@@ -653,10 +738,10 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
             break;
           case 'heatmap':
             mapController.toggleHeatmap();
-            // Trigger heatmap rebuild when toggled
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _rebuildStream.add(null);
-            });
+            _refreshHeatmap();
+            break;
+          case 'heatmap_info':
+            _showHeatmapInfo();
             break;
         }
       },
@@ -749,6 +834,23 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
             ],
           ),
         ),
+        if (mapController.showHeatmap.value)
+          PopupMenuItem(
+            value: 'heatmap_info',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Heatmap Info',
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -888,5 +990,163 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen>
       return '${(number / 1000).toStringAsFixed(1)}K';
     }
     return number.toString();
+  }
+
+  // Method to handle heatmap refresh when data changes
+  void _refreshHeatmap() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_rebuildStream.isClosed) {
+        _rebuildStream.add(null);
+        print('Heatmap refreshed for metric: ${mapController.selectedMetric.value}'); // Debug
+      }
+    });
+  }
+
+  // Enhanced method to handle metric changes
+  void _onMetricChanged(String newMetric) {
+    print('Metric changing from ${mapController.selectedMetric.value} to $newMetric'); // Debug
+    mapController.changeMetric(newMetric.toLowerCase());
+    
+    // Force rebuild with delay to ensure state is updated
+    Future.delayed(Duration(milliseconds: 100), () {
+      _refreshHeatmap();
+    });
+  }
+
+  // Method to get heatmap intensity description
+  String _getHeatmapIntensityDescription() {
+    final metric = mapController.selectedMetric.value.toLowerCase();
+    switch (metric) {
+      case 'deaths':
+        return 'Higher intensity (red/pink) indicates more deaths per location. Grey areas have minimal deaths.';
+      case 'recovered':
+        return 'Higher intensity (green/teal) indicates more recoveries per location. Blue areas have fewer recoveries.';
+      case 'active':
+        return 'Higher intensity (red) indicates more active cases per location. Yellow areas have fewer active cases.';
+      case 'cases':
+      default:
+        return 'Higher intensity (red) indicates more total cases per location. Blue areas have fewer cases.';
+    }
+  }
+
+  // Show heatmap information dialog
+  void _showHeatmapInfo() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              Icons.heat_pump_rounded,
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Heatmap Visualization',
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Current Metric: ${mapController.selectedMetric.value.capitalize}',
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Data points: ${_prepareHeatmapData().length}',
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _getHeatmapIntensityDescription(),
+              style: TextStyle(
+                color: isDark ? Colors.grey[300] : Colors.grey[700],
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Color Legend:',
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildColorLegend(),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Close',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build color legend for heatmap info dialog
+  Widget _buildColorLegend() {
+    final gradient = _getHeatmapGradient();
+    
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          colors: gradient.values.map((color) => color as Color).toList(),
+          stops: gradient.keys.toList(),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              'Low',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Text(
+              'High',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
