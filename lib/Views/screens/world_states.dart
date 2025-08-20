@@ -8,7 +8,6 @@ import 'package:covid19_tracker_flutter/Views/screens/interactive_map_screen.dar
 import 'package:covid19_tracker_flutter/Views/widgets/glassmorphism_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:pie_chart/pie_chart.dart' as PieChart;
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -63,7 +62,9 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xff0f172a) : const Color(0xfff8fafc),
+      backgroundColor: isDark
+          ? const Color(0xff0f172a)
+          : const Color(0xfff8fafc),
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -92,7 +93,9 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.w800,
-                                    color: isDark ? Colors.white : const Color(0xff0f172a),
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xff0f172a),
                                     height: 1.2,
                                   ),
                                 ),
@@ -101,7 +104,9 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
+                                    color: isDark
+                                        ? const Color(0xff64748b)
+                                        : const Color(0xff64748b),
                                     height: 1.2,
                                   ),
                                 ),
@@ -112,22 +117,27 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
                                 _buildIconButton(
                                   icon: Icons.map_rounded,
                                   color: const Color(0xff10b981),
-                                  onTap: () => Get.to(() => const InteractiveMapScreen()),
+                                  onTap: () => Get.to(
+                                    () => const InteractiveMapScreen(),
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 _buildIconButton(
                                   icon: Icons.favorite_rounded,
                                   color: const Color(0xffef4444),
-                                  onTap: () => Get.to(() => const FavoritesScreen()),
+                                  onTap: () =>
+                                      Get.to(() => const FavoritesScreen()),
                                 ),
                                 const SizedBox(width: 8),
-                                Obx(() => _buildIconButton(
-                                  icon: themeController.isDarkMode.value
-                                      ? Icons.light_mode_rounded
-                                      : Icons.dark_mode_rounded,
-                                  color: const Color(0xff6366f1),
-                                  onTap: themeController.toggleTheme,
-                                )),
+                                Obx(
+                                  () => _buildIconButton(
+                                    icon: themeController.isDarkMode.value
+                                        ? Icons.light_mode_rounded
+                                        : Icons.dark_mode_rounded,
+                                    color: const Color(0xff6366f1),
+                                    onTap: themeController.toggleTheme,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -142,196 +152,231 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
                 SliverToBoxAdapter(
                   child: FutureBuilder(
                     future: statesServices.fetchWorldStateRecords(),
-                    builder: (context, AsyncSnapshot<WorldStatesModel> snapshot) {
-                      if (!snapshot.hasData) {
-                        return Container(
-                          height: MediaQuery.of(context).size.height * 0.6,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SpinKitRing(
-                                color: const Color(0xff6366f1),
-                                size: 50,
-                                lineWidth: 4,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Loading global data...',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark ? const Color(0xff64748b) : const Color(0xff64748b),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(
-                            children: [
-                              // Overview Card
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xff1e293b) : Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: isDark 
-                                          ? Colors.black.withOpacity(0.3)
-                                          : Colors.black.withOpacity(0.1),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Global Overview',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDark ? Colors.white : const Color(0xff0f172a),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    
-                                    // Compact Chart
-                                    SizedBox(
-                                      height: 200,
-                                      child: PieChart.PieChart(
-                                        dataMap: {
-                                          "Cases": double.parse(snapshot.data!.cases!.toString()),
-                                          "Recovered": double.parse(snapshot.data!.recovered.toString()),
-                                          "Deaths": double.parse(snapshot.data!.deaths.toString()),
-                                        },
-                                        chartValuesOptions: const PieChart.ChartValuesOptions(
-                                          showChartValuesInPercentage: true,
-                                          chartValueStyle: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 11,
-                                            color: Colors.white,
-                                          ),
-                                          decimalPlaces: 1,
-                                        ),
-                                        chartRadius: 80,
-                                        legendOptions: PieChart.LegendOptions(
-                                          showLegends: true,
-                                          legendPosition: PieChart.LegendPosition.right,
-                                          legendTextStyle: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: isDark ? const Color(0xff94a3b8) : const Color(0xff64748b),
-                                          ),
-                                        ),
-                                        animationDuration: const Duration(milliseconds: 1200),
-                                        chartType: PieChart.ChartType.disc,
-                                        colorList: colorList,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              
-                              const SizedBox(height: 20),
-
-                              // Key Stats Row
-                              Row(
+                    builder:
+                        (context, AsyncSnapshot<WorldStatesModel> snapshot) {
+                          if (!snapshot.hasData) {
+                            return Container(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Expanded(
-                                    child: _buildCompactStatCard(
-                                      'Total Cases',
-                                      snapshot.data!.cases.toString(),
-                                      const Color(0xff6366f1),
-                                      Icons.coronavirus_rounded,
-                                    ),
+                                  SpinKitRing(
+                                    color: const Color(0xff6366f1),
+                                    size: 50,
+                                    lineWidth: 4,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildCompactStatCard(
-                                      'Recovered',
-                                      snapshot.data!.recovered.toString(),
-                                      const Color(0xff10b981),
-                                      Icons.health_and_safety_rounded,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildCompactStatCard(
-                                      'Deaths',
-                                      snapshot.data!.deaths.toString(),
-                                      const Color(0xffef4444),
-                                      Icons.dangerous_rounded,
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Loading global data...',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? const Color(0xff64748b)
+                                          : const Color(0xff64748b),
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
                               ),
-
-                              const SizedBox(height: 16),
-
-                              // Secondary Stats
-                              Row(
+                            );
+                          } else {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: Column(
                                 children: [
-                                  Expanded(
-                                    child: _buildSecondaryStatCard(
-                                      'Active',
-                                      snapshot.data!.active.toString(),
-                                      const Color(0xfff59e0b),
+                                  // Overview Card
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(24),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xff1e293b)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: isDark
+                                              ? Colors.black.withOpacity(0.3)
+                                              : Colors.black.withOpacity(0.1),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Global Overview',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark
+                                                ? Colors.white
+                                                : const Color(0xff0f172a),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+
+                                        // Compact Chart
+                                        SizedBox(
+                                          height: 160,
+                                          child: Row(
+                                            children: [
+                                              // Chart Container
+                                              SizedBox(
+                                                width: 140,
+                                                height: 140,
+                                                child: PieChart(
+                                                  PieChartData(
+                                                    sections:
+                                                        _buildPieChartSections(
+                                                          snapshot.data!,
+                                                        ),
+                                                    sectionsSpace: 3,
+                                                    centerSpaceRadius: 25,
+                                                    startDegreeOffset:
+                                                        -90, // Start from top
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 24),
+                                              // Legend Container
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    _buildChartLegend(
+                                                      'Cases',
+                                                      snapshot.data!.cases!.toInt(),
+                                                      const Color(0xff6366f1),
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    _buildChartLegend(
+                                                      'Recovered',
+                                                      snapshot.data!.recovered!.toInt(),
+                                                      const Color(0xff10b981),
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    _buildChartLegend(
+                                                      'Deaths',
+                                                      snapshot.data!.deaths!.toInt(),
+                                                      const Color(0xffef4444),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildSecondaryStatCard(
-                                      'Critical',
-                                      snapshot.data!.critical.toString(),
-                                      const Color(0xffec4899),
+
+                                  const SizedBox(height: 20),
+
+                                  // Key Stats Row
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildCompactStatCard(
+                                          'Total Cases',
+                                          snapshot.data!.cases.toString(),
+                                          const Color(0xff6366f1),
+                                          Icons.coronavirus_rounded,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildCompactStatCard(
+                                          'Recovered',
+                                          snapshot.data!.recovered.toString(),
+                                          const Color(0xff10b981),
+                                          Icons.health_and_safety_rounded,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildCompactStatCard(
+                                          'Deaths',
+                                          snapshot.data!.deaths.toString(),
+                                          const Color(0xffef4444),
+                                          Icons.dangerous_rounded,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  // Secondary Stats
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildSecondaryStatCard(
+                                          'Active',
+                                          snapshot.data!.active.toString(),
+                                          const Color(0xfff59e0b),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSecondaryStatCard(
+                                          'Critical',
+                                          snapshot.data!.critical.toString(),
+                                          const Color(0xffec4899),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSecondaryStatCard(
+                                          'Today Deaths',
+                                          snapshot.data!.todayDeaths.toString(),
+                                          const Color(0xff8b5cf6),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 24),
+
+                                  // Action Buttons
+                                  _buildModernActionButton(
+                                    'Interactive World Map',
+                                    Icons.public_rounded,
+                                    const Color(0xff10b981),
+                                    () => Get.to(
+                                      () => const InteractiveMapScreen(),
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildSecondaryStatCard(
-                                      'Today Deaths',
-                                      snapshot.data!.todayDeaths.toString(),
-                                      const Color(0xff8b5cf6),
+                                  const SizedBox(height: 12),
+                                  _buildModernActionButton(
+                                    'Explore Countries',
+                                    Icons.list_rounded,
+                                    const Color(0xff6366f1),
+                                    () => Get.to(
+                                      () => const CountriesListScreen(),
                                     ),
                                   ),
+                                  const SizedBox(height: 12),
+                                  _buildModernActionButton(
+                                    'View Favorites',
+                                    Icons.favorite_rounded,
+                                    const Color(0xffef4444),
+                                    () => Get.to(() => const FavoritesScreen()),
+                                  ),
+                                  const SizedBox(height: 24),
                                 ],
                               ),
-
-                              const SizedBox(height: 24),
-
-                              // Action Buttons
-                              _buildModernActionButton(
-                                'Interactive World Map',
-                                Icons.public_rounded,
-                                const Color(0xff10b981),
-                                () => Get.to(() => const InteractiveMapScreen()),
-                              ),
-                              const SizedBox(height: 12),
-                              _buildModernActionButton(
-                                'Explore Countries',
-                                Icons.list_rounded,
-                                const Color(0xff6366f1),
-                                () => Get.to(() => const CountriesListScreen()),
-                              ),
-                              const SizedBox(height: 12),
-                              _buildModernActionButton(
-                                'View Favorites',
-                                Icons.favorite_rounded,
-                                const Color(0xffef4444),
-                                () => Get.to(() => const FavoritesScreen()),
-                              ),
-                              const SizedBox(height: 24),
-                            ],
-                          ),
-                        );
-                      }
-                    },
+                            );
+                          }
+                        },
                   ),
                 ),
               ],
@@ -342,13 +387,108 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
     );
   }
 
+  List<PieChartSectionData> _buildPieChartSections(WorldStatesModel data) {
+    final cases = double.parse(data.cases!.toString());
+    final recovered = double.parse(data.recovered.toString());
+    final deaths = double.parse(data.deaths.toString());
+    final total = cases + recovered + deaths;
+
+    return [
+      // Cases section
+      PieChartSectionData(
+        value: cases,
+        color: const Color(0xff6366f1),
+        title: '${((cases / total) * 100).toStringAsFixed(1)}%',
+        titleStyle: const TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+        radius: 50,
+      ),
+      // Recovered section
+      PieChartSectionData(
+        value: recovered,
+        color: const Color(0xff10b981),
+        title: '${((recovered / total) * 100).toStringAsFixed(1)}%',
+        titleStyle: const TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+        radius: 50,
+      ),
+      // Deaths section - ensure minimum visibility
+      PieChartSectionData(
+        value: deaths < (total * 0.02)
+            ? (total * 0.02)
+            : deaths, // Minimum 2% visibility
+        color: const Color(0xffef4444),
+        title: '${((deaths / total) * 100).toStringAsFixed(1)}%',
+        titleStyle: const TextStyle(
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+        radius: deaths < (total * 0.02)
+            ? 55
+            : 50, // Slightly larger radius for small sections
+      ),
+    ];
+  }
+
+  Widget _buildChartLegend(String title, int value, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isDark
+                      ? const Color(0xff64748b)
+                      : const Color(0xff64748b),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _formatNumber(value.toString()),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : const Color(0xff0f172a),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildIconButton({
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -359,7 +499,7 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: isDark 
+              color: isDark
                   ? Colors.black.withOpacity(0.3)
                   : Colors.black.withOpacity(0.1),
               blurRadius: 10,
@@ -367,30 +507,28 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
             ),
           ],
         ),
-        child: Icon(
-          icon,
-          color: color,
-          size: 20,
-        ),
+        child: Icon(icon, color: color, size: 20),
       ),
     );
   }
 
-  Widget _buildCompactStatCard(String title, String value, Color color, IconData icon) {
+  Widget _buildCompactStatCard(
+    String title,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xff1e293b) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: isDark 
+            color: isDark
                 ? Colors.black.withOpacity(0.2)
                 : Colors.black.withOpacity(0.05),
             blurRadius: 10,
@@ -408,11 +546,7 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 18,
-            ),
+            child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(height: 12),
           Text(
@@ -440,16 +574,13 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
 
   Widget _buildSecondaryStatCard(String title, String value, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,7 +608,12 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
     );
   }
 
-  Widget _buildModernActionButton(String text, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildModernActionButton(
+    String text,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Container(
       width: double.infinity,
       height: 56,
@@ -494,11 +630,7 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(icon, color: Colors.white, size: 20),
             const SizedBox(width: 8),
             Text(
               text,
