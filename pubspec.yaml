@@ -32,6 +32,7 @@ dependencies:
   permission_handler: ^11.0.1
   flutter_map_marker_cluster: ^1.4.0
   flutter_map_heatmap: ^0.0.8 
+  flutter_launcher_icons: ^0.14.4
 
 
 
@@ -40,6 +41,11 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"
 
 flutter:
 
