@@ -4,6 +4,7 @@ import 'package:covid19_tracker_flutter/Models/WorldStatesModel.dart';
 import 'package:covid19_tracker_flutter/Services/states_service.dart';
 import 'package:covid19_tracker_flutter/Views/screens/countries_list.dart';
 import 'package:covid19_tracker_flutter/Views/screens/favorites_screen.dart';
+import 'package:covid19_tracker_flutter/Views/screens/interactive_map_screen.dart';
 import 'package:covid19_tracker_flutter/Views/widgets/glassmorphism_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -108,6 +109,12 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
                             ),
                             Row(
                               children: [
+                                _buildIconButton(
+                                  icon: Icons.map_rounded,
+                                  color: const Color(0xff10b981),
+                                  onTap: () => Get.to(() => const InteractiveMapScreen()),
+                                ),
+                                const SizedBox(width: 8),
                                 _buildIconButton(
                                   icon: Icons.favorite_rounded,
                                   color: const Color(0xffef4444),
@@ -300,8 +307,15 @@ class _WorldStatesScreenState extends State<WorldStatesScreen>
 
                               // Action Buttons
                               _buildModernActionButton(
-                                'Explore Countries',
+                                'Interactive World Map',
                                 Icons.public_rounded,
+                                const Color(0xff10b981),
+                                () => Get.to(() => const InteractiveMapScreen()),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildModernActionButton(
+                                'Explore Countries',
+                                Icons.list_rounded,
                                 const Color(0xff6366f1),
                                 () => Get.to(() => const CountriesListScreen()),
                               ),

@@ -1,4 +1,5 @@
 import 'package:covid19_tracker_flutter/Controllers/theme_controller.dart';
+import 'package:covid19_tracker_flutter/Views/screens/interactive_map_screen.dart';
 import 'package:covid19_tracker_flutter/Views/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: themeController.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
-      home: const SplashScreen(),
+      home: SplashScreen(),
     ));
   }
 }
